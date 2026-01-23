@@ -4,10 +4,12 @@ import java.util.Scanner;
 public class PenguinBot {
 
     public static void main(String[] args) {
-        String initialPrompt = "    ____________________________________________________________\n" +
-                "     Hello! I'm PenguinBot\n" +
-                "     What can I do for you?\n" +
-                "    ____________________________________________________________\n";
+        String initialPrompt = """
+                    ____________________________________________________________
+                     Hello! I'm PenguinBot
+                     What can I do for you?
+                    ____________________________________________________________
+                """;
 
         System.out.println(initialPrompt);
 
@@ -86,7 +88,7 @@ public class PenguinBot {
                                 list.add(toDo);
                                 System.out.println("    ____________________________________________________________\n" +
                                         "     Got it. I've added this task:\n" +
-                                        "       " + toDo.toString() + "\n" +
+                                        "       " + toDo + "\n" +
                                         "     Now you have " + list.size() + " tasks in the list.\n" +
                                         "    ____________________________________________________________\n");
                             }
@@ -101,7 +103,7 @@ public class PenguinBot {
                                 list.add(deadlineTask);
                                 System.out.println("    ____________________________________________________________\n" +
                                         "     Got it. I've added this task:\n" +
-                                        "       " + deadlineTask.toString() + "\n" +
+                                        "       " + deadlineTask + "\n" +
                                         "     Now you have " + list.size() + " tasks in the list.\n" +
                                         "    ____________________________________________________________\n");
                             }
@@ -121,12 +123,12 @@ public class PenguinBot {
                                 list.add(eventTask);
                                 System.out.println("    ____________________________________________________________\n" +
                                         "     Got it. I've added this task:\n" +
-                                        "       " + eventTask.toString() + "\n" +
+                                        "       " + eventTask + "\n" +
                                         "     Now you have " + list.size() + " tasks in the list.\n" +
                                         "    ____________________________________________________________\n");
                             }
                             case BYE, LIST -> {
-                                // handled earlier; keep no-op here
+                                
                             }
                         }
                     } catch (IllegalArgumentException e) {
