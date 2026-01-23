@@ -1,4 +1,4 @@
-# Duke User Guide
+# PenguinBot User Guide
 
 // Update the title above to match the actual product name
 
