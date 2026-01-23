@@ -10,8 +10,7 @@ public class PenguinBot {
 
         System.out.println(initialPrompt);
 
-        Task[] list = new Task[100];
-        int count = 0;
+        ArrayList<Task> list = new ArrayList<>();
 
         while (true) {
             Scanner scanner = new Scanner(System.in);
@@ -27,12 +26,10 @@ public class PenguinBot {
             } else if (userInput.equals("list")){
                 StringBuilder output = new StringBuilder();
                 int i = 1;
-                while (i <= list.length && list[i - 1] != null) {
+                while (i <= list.size() && list.get(i - 1) != null) {
                     output.append(i)
-                            .append(". [")
-                            .append(list[i - 1].getStatusIcon())
-                            .append("] ")
-                            .append(list[i - 1].description)
+                            .append(". ")
+                            .append(list.get(i - 1).toString())
                             .append("\n");
                     i++;
                 }
@@ -41,32 +38,83 @@ public class PenguinBot {
                         "    ____________________________________________________________\n");
 
             } else {
-                String[] parts = userInput.split("\\s+", 2);
+                String[] parts = userInput.split("\\s+");
                 String action = parts[0];
 
-                if (action.equals("mark")) {
-                    int number = Integer.parseInt(parts[1]);
+                final String parameters = userInput.substring(action.length()).trim();
+                switch (action) {
+                    case "mark" -> {
+                        int number = Integer.parseInt(parts[1]);
 
-                    list[number - 1].markAsDone();
-                    System.out.println("    ____________________________________________________________\n" +
-                            "     Nice! I've marked this task as done:\n" +
-                            "       [" + list[number - 1].getStatusIcon() + "] " + list[number - 1].description + "\n" +
-                            "    ____________________________________________________________");
-                } else if (action.equals("unmark")){
-                    int number = Integer.parseInt(parts[1]);
+                        list.get(number - 1).markAsDone();
+                        System.out.println("    ____________________________________________________________\n" +
+                                "     Nice! I've marked this task as done:\n" +
+                                "       " + list.get(number - 1).toString() + "\n" +
+                                "    ____________________________________________________________");
+                    }
+                    case "unmark" -> {
+                        int number = Integer.parseInt(parts[1]);
 
-                    list[number - 1].markAsUndone();
-                    System.out.println("    ____________________________________________________________\n" +
-                            "     OK, I've marked this task as not done yet:\n" +
-                            "       [" + list[number - 1].getStatusIcon() + "] " + list[number - 1].description + "\n" +
-                            "    ____________________________________________________________");
-                } else {
-                    list[count] = new Task(userInput);
-                    count++;
-                    System.out.println("    ____________________________________________________________\n" +
-                            "Added: " + userInput + "\n" +
-                            "    ____________________________________________________________\n");
+                        list.get(number - 1).markAsUndone();
+                        System.out.println("    ____________________________________________________________\n" +
+                                "     OK, I've marked this task as not done yet:\n" +
+                                "       " + list.get(number - 1).toString() + "\n" +
+                                "    ____________________________________________________________");
+                    }
+                    case "todo" -> {
+                        ToDo toDo = new ToDo(parameters);
+                        list.add(toDo);
+                        System.out.println("    ____________________________________________________________\n" +
+                                "     Got it. I've added this task:\n" +
+                                "       " + toDo.toString() + "\n" +
+                                "     Now you have " + list.size() + " tasks in the list.\n" +
+                                "    ____________________________________________________________\n");
+                    }
+                    case "deadline" -> {
+                        String by = "";
+                        String[] bySplit = parameters.split("/by", 2);
+                        String description = bySplit[0].trim();
+                        if (bySplit.length > 1) {
+                            by = bySplit[1].trim();
+                        }
+                        Deadline deadlineTask = new Deadline(description, by);
+                        list.add(deadlineTask);
+                        System.out.println("    ____________________________________________________________\n" +
+                                "     Got it. I've added this task:\n" +
+                                "       " + deadlineTask.toString() + "\n" +
+                                "     Now you have " + list.size() + " tasks in the list.\n" +
+                                "    ____________________________________________________________\n");
+                    }
+                    case "event" -> {
+                        String startTime = "";
+                        String endTime = "";
+                        String[] fromSplit = parameters.split("/from", 2);
+                        String description = fromSplit[0].trim();
+                        if (fromSplit.length > 1) {
+                            String[] toSplit = fromSplit[1].split("/to", 2);
+                            startTime = toSplit[0].trim();
+                            if (toSplit.length > 1) {
+                                endTime = toSplit[1].trim();
+                            }
+                        }
+                        Event eventTask = new Event(description, startTime, endTime);
+                        list.add(eventTask);
+                        System.out.println("    ____________________________________________________________\n" +
+                                "     Got it. I've added this task:\n" +
+                                "       " + eventTask.toString() + "\n" +
+                                "     Now you have " + list.size() + " tasks in the list.\n" +
+                                "    ____________________________________________________________\n");
+                    }
                 }
+
+
+//                else {
+//                    list[count] = new Task(userInput);
+//                    count++;
+//                    System.out.println("    ____________________________________________________________\n" +
+//                            "Added: " + userInput + "\n" +
+//                            "    ____________________________________________________________\n");
+//                }
             }
         }
     }

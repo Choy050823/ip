@@ -18,4 +18,13 @@ public class Task {
     public void markAsUndone() {
         this.isDone = false;
     }
+
+    public String getTaskType() {
+        return " ";
+    }
+
+    @Override
+    public String toString() {
+        return "[" + getStatusIcon() + "] " + description;
+    }
 }
