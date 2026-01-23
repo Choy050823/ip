@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class PenguinBot {
+
     public static void main(String[] args) {
         String initialPrompt = "    ____________________________________________________________\n" +
                 "     Hello! I'm PenguinBot\n" +
@@ -44,85 +45,92 @@ public class PenguinBot {
                     String action = parts[0];
 
                     final String parameters = userInput.substring(action.length()).trim();
-                    switch (action) {
-                        case "mark" -> {
-                            int number = Integer.parseInt(parts[1]);
+                    try {
+                        actions parsedAction = actions.valueOf(action.toUpperCase());
+                        switch (parsedAction) {
+                            case MARK -> {
+                                int number = Integer.parseInt(parts[1]);
 
-                            list.get(number - 1).markAsDone();
-                            System.out.println("    ____________________________________________________________\n" +
-                                    "     Nice! I've marked this task as done:\n" +
-                                    "       " + list.get(number - 1).toString() + "\n" +
-                                    "    ____________________________________________________________");
-                        }
-                        case "unmark" -> {
-                            int number = Integer.parseInt(parts[1]);
-
-                            list.get(number - 1).markAsUndone();
-                            System.out.println("    ____________________________________________________________\n" +
-                                    "     OK, I've marked this task as not done yet:\n" +
-                                    "       " + list.get(number - 1).toString() + "\n" +
-                                    "    ____________________________________________________________");
-                        }
-                        case "delete" -> {
-                            int number = Integer.parseInt(parts[1]) - 1;
-                            if (list.get(number) != null) {
-                                Task task = list.get(number);
-                                list.remove(number);
+                                list.get(number - 1).markAsDone();
                                 System.out.println("    ____________________________________________________________\n" +
-                                        "     Noted. I've removed this task:\n" +
-                                        "       " + task.toString() + "\n" +
-                                        "     Now you have " + list.size() + " tasks in the list.\n" +
+                                        "     Nice! I've marked this task as done:\n" +
+                                        "       " + list.get(number - 1).toString() + "\n" +
                                         "    ____________________________________________________________");
                             }
-                        }
-                        case "todo" -> {
-                            if (parameters.isBlank()) {
-                                throw new PenguinBotException("Todo needs a description.");
+                            case UNMARK -> {
+                                int number = Integer.parseInt(parts[1]);
+
+                                list.get(number - 1).markAsUndone();
+                                System.out.println("    ____________________________________________________________\n" +
+                                        "     OK, I've marked this task as not done yet:\n" +
+                                        "       " + list.get(number - 1).toString() + "\n" +
+                                        "    ____________________________________________________________");
                             }
-                            ToDo toDo = new ToDo(parameters);
-                            list.add(toDo);
-                            System.out.println("    ____________________________________________________________\n" +
-                                    "     Got it. I've added this task:\n" +
-                                    "       " + toDo.toString() + "\n" +
-                                    "     Now you have " + list.size() + " tasks in the list.\n" +
-                                    "    ____________________________________________________________\n");
-                        }
-                        case "deadline" -> {
-                            String by = "";
-                            String[] bySplit = parameters.split("/by", 2);
-                            String description = bySplit[0].trim();
-                            if (bySplit.length > 1) {
-                                by = bySplit[1].trim();
-                            }
-                            Deadline deadlineTask = new Deadline(description, by);
-                            list.add(deadlineTask);
-                            System.out.println("    ____________________________________________________________\n" +
-                                    "     Got it. I've added this task:\n" +
-                                    "       " + deadlineTask.toString() + "\n" +
-                                    "     Now you have " + list.size() + " tasks in the list.\n" +
-                                    "    ____________________________________________________________\n");
-                        }
-                        case "event" -> {
-                            String startTime = "";
-                            String endTime = "";
-                            String[] fromSplit = parameters.split("/from", 2);
-                            String description = fromSplit[0].trim();
-                            if (fromSplit.length > 1) {
-                                String[] toSplit = fromSplit[1].split("/to", 2);
-                                startTime = toSplit[0].trim();
-                                if (toSplit.length > 1) {
-                                    endTime = toSplit[1].trim();
+                            case DELETE -> {
+                                int number = Integer.parseInt(parts[1]) - 1;
+                                if (list.get(number) != null) {
+                                    Task task = list.get(number);
+                                    list.remove(number);
+                                    System.out.println("    ____________________________________________________________\n" +
+                                            "     Noted. I've removed this task:\n" +
+                                            "       " + task.toString() + "\n" +
+                                            "     Now you have " + list.size() + " tasks in the list.\n" +
+                                            "    ____________________________________________________________");
                                 }
                             }
-                            Event eventTask = new Event(description, startTime, endTime);
-                            list.add(eventTask);
-                            System.out.println("    ____________________________________________________________\n" +
-                                    "     Got it. I've added this task:\n" +
-                                    "       " + eventTask.toString() + "\n" +
-                                    "     Now you have " + list.size() + " tasks in the list.\n" +
-                                    "    ____________________________________________________________\n");
+                            case TODO -> {
+                                if (parameters.isBlank()) {
+                                    throw new PenguinBotException("Todo needs a description.");
+                                }
+                                ToDo toDo = new ToDo(parameters);
+                                list.add(toDo);
+                                System.out.println("    ____________________________________________________________\n" +
+                                        "     Got it. I've added this task:\n" +
+                                        "       " + toDo.toString() + "\n" +
+                                        "     Now you have " + list.size() + " tasks in the list.\n" +
+                                        "    ____________________________________________________________\n");
+                            }
+                            case DEADLINE -> {
+                                String by = "";
+                                String[] bySplit = parameters.split("/by", 2);
+                                String description = bySplit[0].trim();
+                                if (bySplit.length > 1) {
+                                    by = bySplit[1].trim();
+                                }
+                                Deadline deadlineTask = new Deadline(description, by);
+                                list.add(deadlineTask);
+                                System.out.println("    ____________________________________________________________\n" +
+                                        "     Got it. I've added this task:\n" +
+                                        "       " + deadlineTask.toString() + "\n" +
+                                        "     Now you have " + list.size() + " tasks in the list.\n" +
+                                        "    ____________________________________________________________\n");
+                            }
+                            case EVENT -> {
+                                String startTime = "";
+                                String endTime = "";
+                                String[] fromSplit = parameters.split("/from", 2);
+                                String description = fromSplit[0].trim();
+                                if (fromSplit.length > 1) {
+                                    String[] toSplit = fromSplit[1].split("/to", 2);
+                                    startTime = toSplit[0].trim();
+                                    if (toSplit.length > 1) {
+                                        endTime = toSplit[1].trim();
+                                    }
+                                }
+                                Event eventTask = new Event(description, startTime, endTime);
+                                list.add(eventTask);
+                                System.out.println("    ____________________________________________________________\n" +
+                                        "     Got it. I've added this task:\n" +
+                                        "       " + eventTask.toString() + "\n" +
+                                        "     Now you have " + list.size() + " tasks in the list.\n" +
+                                        "    ____________________________________________________________\n");
+                            }
+                            case BYE, LIST -> {
+                                // handled earlier; keep no-op here
+                            }
                         }
-                        default -> throw new PenguinBotException("Unknown command: " + action);
+                    } catch (IllegalArgumentException e) {
+                        throw new PenguinBotException("Unknown command: " + action);
                     }
                 }
             } catch (PenguinBotException e) {
