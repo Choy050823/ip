@@ -1,7 +1,9 @@
-public class Deadline extends Task{
-    protected String deadline;
+import java.time.LocalDateTime;
 
-    public Deadline(String description, String deadline) {
+public class Deadline extends Task {
+    protected LocalDateTime deadline;
+
+    public Deadline(String description, LocalDateTime deadline) {
         super(description);
         this.deadline = deadline;
     }
@@ -9,10 +11,6 @@ public class Deadline extends Task{
     @Override
     public String getTaskType() {
         return "D";
-    }
-
-    public String getDeadline() {
-        return deadline;
     }
 
     @Override
