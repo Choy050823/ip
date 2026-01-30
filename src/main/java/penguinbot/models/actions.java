@@ -1,3 +1,5 @@
+package penguinbot.models;
+
 public enum actions {
     BYE,
     LIST,

@@ -1,6 +1,8 @@
+package penguinbot.models;
+
 import java.time.LocalDateTime;
 
-public class Event extends Task{
+public class Event extends Task {
     protected LocalDateTime startTime;
     protected LocalDateTime endTime;
 
