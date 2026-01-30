@@ -6,21 +6,43 @@ import penguinbot.models.Task;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Maintains an in-memory list of tasks and provides task operations.
+ */
 public class TaskList {
+    /** Internal task collection. */
     private List<Task> tasks;
 
+    /**
+     * Creates a task list seeded with existing tasks.
+     *
+     * @param tasks tasks to manage.
+     */
     public TaskList(List<Task> tasks) {
         this.tasks = tasks;
     }
 
+    /**
+     * Creates an empty task list.
+     */
     public TaskList() {
         this.tasks = new ArrayList<>();
     }
 
+    /**
+     * Returns the underlying list of tasks.
+     *
+     * @return mutable task list.
+     */
     public List<Task> getTasks() {
         return this.tasks;
     }
 
+    /**
+     * Adds a task and prints confirmation.
+     *
+     * @param task task to add.
+     */
     public void addTask(Task task) {
         this.tasks.add(task);
         System.out.println("    ____________________________________________________________\n" +
@@ -30,6 +52,11 @@ public class TaskList {
                 "    ____________________________________________________________\n");
     }
 
+    /**
+     * Deletes a task by 1-based index and prints confirmation.
+     *
+     * @param number 1-based index of task to remove.
+     */
     public void deleteTask(int number) {
         if (tasks.get(number - 1) != null) {
             Task task = tasks.get(number - 1);
@@ -42,6 +69,11 @@ public class TaskList {
         }
     }
 
+    /**
+     * Marks a task as done by 1-based index.
+     *
+     * @param number 1-based index of task to mark.
+     */
     public void markTask(int number) {
         tasks.get(number - 1).markAsDone();
         System.out.println("    ____________________________________________________________\n" +
@@ -50,6 +82,11 @@ public class TaskList {
                 "    ____________________________________________________________");
     }
 
+    /**
+     * Marks a task as not done by 1-based index.
+     *
+     * @param number 1-based index of task to unmark.
+     */
     public void unmarkTask(int number) {
         tasks.get(number - 1).markAsUndone();
         System.out.println("    ____________________________________________________________\n" +
@@ -58,6 +95,9 @@ public class TaskList {
                 "    ____________________________________________________________");
     }
 
+    /**
+     * Prints all tasks with indices to standard output.
+     */
     public void printTasks() {
         StringBuilder output = new StringBuilder();
         int i = 1;
@@ -74,6 +114,12 @@ public class TaskList {
                 "    ____________________________________________________________\n");
     }
 
+    /**
+     * Persists tasks using the provided storage instance.
+     *
+     * @param storage storage handler.
+     * @throws PenguinBotException when persistence fails.
+     */
     public void storeTasksToStorage(Storage storage) throws PenguinBotException {
         storage.storeTasks(tasks);
     }

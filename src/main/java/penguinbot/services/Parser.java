@@ -9,12 +9,28 @@ import penguinbot.models.ToDo;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 
+/**
+ * Interprets user commands and dispatches task operations.
+ */
 public class Parser {
+    /** Task list being manipulated. */
     private TaskList tasks;
+
+    /** Storage handler for persistence on exit. */
     private Storage storage;
+
+    /** UI for user interaction. */
     private Ui ui;
+    /**  Flag indicating whether the session should terminate. */
     private boolean isExit;
 
+    /**
+     * Creates a parser with dependencies injected.
+     *
+     * @param tasks   task list to modify.
+     * @param storage storage for persistence.
+     * @param ui      user interface helper.
+     */
     public Parser(TaskList tasks, Storage storage, Ui ui) {
         this.tasks = tasks;
         this.storage = storage;
@@ -22,10 +38,21 @@ public class Parser {
         this.isExit = false;
     }
 
+    /**
+     * Returns true if the user requested exit.
+     *
+     * @return exit flag.
+     */
     public boolean isExit() {
         return this.isExit;
     }
 
+    /**
+     * Parses a user command and executes the corresponding action,
+     * printing any user-facing errors.
+     *
+     * @param userInput raw input string.
+     */
     public void parseAndExecute(String userInput) {
         try {
             if (userInput.equals("bye")) {
@@ -108,6 +135,14 @@ public class Parser {
         }
     }
 
+    /**
+     * Parses user-provided date-time strings using ISO format.
+     *
+     * @param raw   raw date-time text.
+     * @param label context label for error messaging.
+     * @return parsed {@link LocalDateTime}.
+     * @throws PenguinBotException when parsing fails or input is blank.
+     */
     private static LocalDateTime parseUserDateTime(String raw, String label) throws PenguinBotException {
         if (raw == null || raw.isBlank()) {
             throw new PenguinBotException("Missing " + label + " date-time (use ISO e.g. 2024-02-01T13:30).");

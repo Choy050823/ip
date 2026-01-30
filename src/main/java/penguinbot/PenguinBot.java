@@ -8,20 +8,29 @@ import penguinbot.services.Ui;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 
+/**
+ * Entry point for the PenguinBot application, wiring storage, UI, and parsing.
+ */
 public class PenguinBot {
 
+    /** Handles persistence of tasks. */
     private final Storage storage;
 
+    /**
+     * Current in-memory task list.
+     */
     private TaskList tasks;
 
+    /** User interface handler for input/output. */
     private final Ui ui;
 
-    private static final DateTimeFormatter STORAGE_DATE_TIME = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-
+    /**
+     * Constructs the bot and initializes storage and task list from disk.
+     *
+     * @param filePathString path to the task storage file.
+     */
     public PenguinBot(String filePathString) {
         ui = new Ui();
         storage = new Storage(filePathString);
@@ -37,6 +46,9 @@ public class PenguinBot {
         }
     }
 
+    /**
+     * Starts the interactive command loop.
+     */
     public void run() {
         ui.showWelcome();
 
@@ -48,7 +60,12 @@ public class PenguinBot {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    /**
+     * Program entry point.
+     *
+     * @param args CLI arguments.
+     */
+    public static void main(String[] args) {
         new PenguinBot("./src/data/TaskList.txt").run();
     }
 }
