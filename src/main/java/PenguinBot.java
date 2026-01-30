@@ -1,107 +1,37 @@
-import java.io.File;
-import java.io.FileWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 public class PenguinBot {
 
+    private final Storage storage;
+
+    private TaskList tasks;
+
+    private final Ui ui;
+
     private static final DateTimeFormatter STORAGE_DATE_TIME = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    public static void main(String[] args) throws IOException {
-        String initialPrompt = """
-                    ____________________________________________________________
-                     Hello! I'm PenguinBot
-                     What can I do for you?
-                    ____________________________________________________________
-                """;
+    public PenguinBot(String filePathString) {
+        ui = new Ui();
+        storage = new Storage(filePathString);
 
-        System.out.println(initialPrompt);
-
-        ArrayList<Task> list = new ArrayList<>();
-
-        // Load the file
-        String filePathString = "./src/data/TaskList.txt";
-        Path filePath = Paths.get(filePathString);
-        Path parentDir = filePath.getParent();
-
-        // Handle the file not found problems
         try {
-            if (parentDir != null) {
-                Files.createDirectories(parentDir);
-            }
-
-            if (Files.notExists(filePath)) {
-                Files.createFile(filePath);
-            }
-        } catch (IOException e) {
-            System.err.println("Failed to create directory/file: " + e.getMessage());
+            tasks = new TaskList(storage.loadTasks());
+        } catch (PenguinBotException e) {
+            ui.showPenguinBotExceptionMessage(e);
+            tasks = new TaskList();
+        } catch (FileNotFoundException e) {
+            ui.showPenguinBotExceptionMessage(new PenguinBotException("File Not Found!"));
+            tasks = new TaskList();
         }
+    }
 
-        File textListFile = new File(filePathString);
-        try (Scanner fileScanner = new Scanner(textListFile)) {
-            // Load the string into task objects
-            while (fileScanner.hasNext()) {
-                String taskString = fileScanner.nextLine();
-                String[] parts = taskString.split(" \\| ");
-                if (parts.length == 0 || parts[0].isBlank()) {
-                    continue;
-                }
-                try {
-                    boolean isDone = parseDone(parts);
-                    String type = parts[0].trim();
-                    switch (type) {
-                        case "T" -> {
-                            String description = extractDescription(parts);
-                            Task todoTask = new ToDo(description);
-                            if (isDone) {
-                                todoTask.markAsDone();
-                            }
-                            list.add(todoTask);
-                        }
-                        case "D" -> {
-                            String description = extractDescription(parts);
-                            String byRaw = extractDateSegment(parts, "by:");
-                            LocalDateTime by = parseStoredDateTime(byRaw);
-                            Task deadlineTask = new Deadline(description, by);
-                            if (isDone) {
-                                deadlineTask.markAsDone();
-                            }
-                            list.add(deadlineTask);
-                        }
-                        case "E" -> {
-                            String description = extractDescription(parts);
-                            String timeSegment = extractDateSegment(parts, "from:");
-                            Pattern pattern = Pattern.compile("from: (.*?) to: (.*)");
-                            Matcher matcher = pattern.matcher(timeSegment);
-                            if (!matcher.find()) {
-                                throw new PenguinBotException("Corrupted event line");
-                            }
-                            LocalDateTime start = parseStoredDateTime(matcher.group(1));
-                            LocalDateTime end = parseStoredDateTime(matcher.group(2));
-                            Task eventTask = new Event(description, start, end);
-                            if (isDone) {
-                                eventTask.markAsDone();
-                            }
-                            list.add(eventTask);
-                        }
-                        default -> System.out.println("Not a valid task");
-                    }
-                } catch (PenguinBotException e) {
-                    System.out.println("    ____________________________________________________________\n"
-                            + "     Skipping bad entry: " + e.getMessage() + "\n"
-                            + "    ____________________________________________________________");
-                }
-            }
-        }
+    public void run() {
+        ui.showWelcome();
 
         Scanner scanner = new Scanner(System.in);
 
@@ -110,36 +40,39 @@ public class PenguinBot {
             try {
                 if (userInput.equals("bye")) {
                     // Write the list into the file
-                    try (FileWriter fw = new FileWriter(filePathString, false)) {
-                        for (Task task : list) {
-                            fw.write(task.toString());
-                            fw.write(System.lineSeparator());
-                        }
-                    } catch (IOException e) {
-                        throw new PenguinBotException("Failed to save tasks: " + e.getMessage());
-                    }
-
-                    System.out.println("""
-                            ____________________________________________________________
-                             Bye. Hope to see you again soon!
-                            ____________________________________________________________\
-                        """);
+                    tasks.storeTasksToStorage(storage);
                     break;
+//                    try (FileWriter fw = new FileWriter(filePathString, false)) {
+//                        for (Task task : list) {
+//                            fw.write(task.toString());
+//                            fw.write(System.lineSeparator());
+//                        }
+//                    } catch (IOException e) {
+//                        throw new PenguinBotException("Failed to save tasks: " + e.getMessage());
+//                    }
+//
+//                    System.out.println("""
+//                            ____________________________________________________________
+//                             Bye. Hope to see you again soon!
+//                            ____________________________________________________________\
+//                        """);
+//                    break;
 
-                } else if (userInput.equals("list")){
-                    StringBuilder output = new StringBuilder();
-                    int i = 1;
-                    while (i <= list.size() && list.get(i - 1) != null) {
-                        output.append("     ")
-                                .append(i)
-                                .append(". ")
-                                .append(list.get(i - 1).toString())
-                                .append("\n");
-                        i++;
-                    }
-                    System.out.println("    ____________________________________________________________\n" +
-                             output + "\n" +
-                        "    ____________________________________________________________\n");
+                } else if (userInput.equals("list")) {
+                    tasks.printTasks();
+//                    StringBuilder output = new StringBuilder();
+//                    int i = 1;
+//                    while (i <= list.size() && list.get(i - 1) != null) {
+//                        output.append("     ")
+//                                .append(i)
+//                                .append(". ")
+//                                .append(list.get(i - 1).toString())
+//                                .append("\n");
+//                        i++;
+//                    }
+//                    System.out.println("    ____________________________________________________________\n" +
+//                             output + "\n" +
+//                        "    ____________________________________________________________\n");
 
                 } else {
                     String[] parts = userInput.split("\\s+");
@@ -151,45 +84,48 @@ public class PenguinBot {
                         switch (parsedAction) {
                             case MARK -> {
                                 int number = Integer.parseInt(parts[1]);
-
-                                list.get(number - 1).markAsDone();
-                                System.out.println("    ____________________________________________________________\n" +
-                                        "     Nice! I've marked this task as done:\n" +
-                                        "       " + list.get(number - 1).toString() + "\n" +
-                                        "    ____________________________________________________________");
+                                tasks.markTask(number);
+//
+//                                list.get(number - 1).markAsDone();
+//                                System.out.println("    ____________________________________________________________\n" +
+//                                        "     Nice! I've marked this task as done:\n" +
+//                                        "       " + list.get(number - 1).toString() + "\n" +
+//                                        "    ____________________________________________________________");
                             }
                             case UNMARK -> {
                                 int number = Integer.parseInt(parts[1]);
+                                tasks.unmarkTask(number);
 
-                                list.get(number - 1).markAsUndone();
-                                System.out.println("    ____________________________________________________________\n" +
-                                        "     OK, I've marked this task as not done yet:\n" +
-                                        "       " + list.get(number - 1).toString() + "\n" +
-                                        "    ____________________________________________________________");
+//                                list.get(number - 1).markAsUndone();
+//                                System.out.println("    ____________________________________________________________\n" +
+//                                        "     OK, I've marked this task as not done yet:\n" +
+//                                        "       " + list.get(number - 1).toString() + "\n" +
+//                                        "    ____________________________________________________________");
                             }
                             case DELETE -> {
-                                int number = Integer.parseInt(parts[1]) - 1;
-                                if (list.get(number) != null) {
-                                    Task task = list.get(number);
-                                    list.remove(number);
-                                    System.out.println("    ____________________________________________________________\n" +
-                                            "     Noted. I've removed this task:\n" +
-                                            "       " + task.toString() + "\n" +
-                                            "     Now you have " + list.size() + " tasks in the list.\n" +
-                                            "    ____________________________________________________________");
-                                }
+                                int number = Integer.parseInt(parts[1]);
+                                tasks.deleteTask(number);
+//                                if (list.get(number) != null) {
+//                                    Task task = list.get(number);
+//                                    list.remove(number);
+//                                    System.out.println("    ____________________________________________________________\n" +
+//                                            "     Noted. I've removed this task:\n" +
+//                                            "       " + task.toString() + "\n" +
+//                                            "     Now you have " + list.size() + " tasks in the list.\n" +
+//                                            "    ____________________________________________________________");
+//                                }
                             }
                             case TODO -> {
                                 if (parameters.isBlank()) {
                                     throw new PenguinBotException("Todo needs a description.");
                                 }
                                 ToDo toDo = new ToDo(parameters);
-                                list.add(toDo);
-                                System.out.println("    ____________________________________________________________\n" +
-                                        "     Got it. I've added this task:\n" +
-                                        "       " + toDo + "\n" +
-                                        "     Now you have " + list.size() + " tasks in the list.\n" +
-                                        "    ____________________________________________________________\n");
+                                tasks.addTask(toDo);
+//                                System.out.println("    ____________________________________________________________\n" +
+//                                        "     Got it. I've added this task:\n" +
+//                                        "       " + toDo + "\n" +
+//                                        "     Now you have " + list.size() + " tasks in the list.\n" +
+//                                        "    ____________________________________________________________\n");
                             }
                             case DEADLINE -> {
                                 String by = "";
@@ -203,12 +139,12 @@ public class PenguinBot {
                                 }
                                 LocalDateTime byDateTime = parseUserDateTime(by, "deadline");
                                 Deadline deadlineTask = new Deadline(description, byDateTime);
-                                list.add(deadlineTask);
-                                System.out.println("    ____________________________________________________________\n" +
-                                        "     Got it. I've added this task:\n" +
-                                        "       " + deadlineTask + "\n" +
-                                        "     Now you have " + list.size() + " tasks in the list.\n" +
-                                        "    ____________________________________________________________\n");
+                                tasks.addTask(deadlineTask);
+//                                System.out.println("    ____________________________________________________________\n" +
+//                                        "     Got it. I've added this task:\n" +
+//                                        "       " + deadlineTask + "\n" +
+//                                        "     Now you have " + list.size() + " tasks in the list.\n" +
+//                                        "    ____________________________________________________________\n");
                             }
                             case EVENT -> {
                                 String startTime = "";
@@ -228,67 +164,119 @@ public class PenguinBot {
                                 LocalDateTime start = parseUserDateTime(startTime, "event start");
                                 LocalDateTime end = parseUserDateTime(endTime, "event end");
                                 Event eventTask = new Event(description, start, end);
-                                list.add(eventTask);
-                                System.out.println("    ____________________________________________________________\n" +
-                                        "     Got it. I've added this task:\n" +
-                                        "       " + eventTask + "\n" +
-                                        "     Now you have " + list.size() + " tasks in the list.\n" +
-                                        "    ____________________________________________________________\n");
+                                tasks.addTask(eventTask);
+//                                System.out.println("    ____________________________________________________________\n" +
+//                                        "     Got it. I've added this task:\n" +
+//                                        "       " + eventTask + "\n" +
+//                                        "     Now you have " + list.size() + " tasks in the list.\n" +
+//                                        "    ____________________________________________________________\n");
                             }
-                            case BYE, LIST -> {
-                                
-                            }
+//                            case BYE, LIST -> {
+//
+//                            }
                         }
                     } catch (IllegalArgumentException e) {
                         throw new PenguinBotException("Unknown command: " + action);
                     }
                 }
             } catch (PenguinBotException e) {
-                System.out.println("    ____________________________________________________________\n" +
-                        "     " + e.getMessage() + "\n" +
-                        "    ____________________________________________________________");
+                ui.showPenguinBotExceptionMessage(e);
+//                System.out.println("    ____________________________________________________________\n" +
+//                        "     " + e.getMessage() + "\n" +
+//                        "    ____________________________________________________________");
             }
         }
     }
 
-    private static boolean parseDone(String[] parts) {
-        if (parts.length < 2) {
-            return false;
-        }
-        String token = parts[1].trim();
-        if ("1".equals(token)) {
-            return true;
-        }
-        if ("0".equals(token)) {
-            return false;
-        }
-        return token.startsWith("[X]");
-    }
+    public static void main(String[] args) throws IOException {
+        new PenguinBot("./src/data/TaskList.txt").run();
+//        String initialPrompt = """
+//                    ____________________________________________________________
+//                     Hello! I'm PenguinBot
+//                     What can I do for you?
+//                    ____________________________________________________________
+//                """;
+//
+//        System.out.println(initialPrompt);
+//
+//        ArrayList<Task> list = new ArrayList<>();
+//
+//        // Load the file
+//        String filePathString = "./src/data/TaskList.txt";
+//        Path filePath = Paths.get(filePathString);
+//        Path parentDir = filePath.getParent();
+//
+//        // Handle the file not found problems
+//        try {
+//            if (parentDir != null) {
+//                Files.createDirectories(parentDir);
+//            }
+//
+//            if (Files.notExists(filePath)) {
+//                Files.createFile(filePath);
+//            }
+//        } catch (IOException e) {
+//            System.err.println("Failed to create directory/file: " + e.getMessage());
+//        }
+//
+//        File textListFile = new File(filePathString);
+//        try (Scanner fileScanner = new Scanner(textListFile)) {
+//            // Load the string into task objects
+//            while (fileScanner.hasNext()) {
+//                String taskString = fileScanner.nextLine();
+//                String[] parts = taskString.split(" \\| ");
+//                if (parts.length == 0 || parts[0].isBlank()) {
+//                    continue;
+//                }
+//                try {
+//                    boolean isDone = parseDone(parts);
+//                    String type = parts[0].trim();
+//                    switch (type) {
+//                        case "T" -> {
+//                            String description = extractDescription(parts);
+//                            Task todoTask = new ToDo(description);
+//                            if (isDone) {
+//                                todoTask.markAsDone();
+//                            }
+//                            list.add(todoTask);
+//                        }
+//                        case "D" -> {
+//                            String description = extractDescription(parts);
+//                            String byRaw = extractDateSegment(parts, "by:");
+//                            LocalDateTime by = parseStoredDateTime(byRaw);
+//                            Task deadlineTask = new Deadline(description, by);
+//                            if (isDone) {
+//                                deadlineTask.markAsDone();
+//                            }
+//                            list.add(deadlineTask);
+//                        }
+//                        case "E" -> {
+//                            String description = extractDescription(parts);
+//                            String timeSegment = extractDateSegment(parts, "from:");
+//                            Pattern pattern = Pattern.compile("from: (.*?) to: (.*)");
+//                            Matcher matcher = pattern.matcher(timeSegment);
+//                            if (!matcher.find()) {
+//                                throw new PenguinBotException("Corrupted event line");
+//                            }
+//                            LocalDateTime start = parseStoredDateTime(matcher.group(1));
+//                            LocalDateTime end = parseStoredDateTime(matcher.group(2));
+//                            Task eventTask = new Event(description, start, end);
+//                            if (isDone) {
+//                                eventTask.markAsDone();
+//                            }
+//                            list.add(eventTask);
+//                        }
+//                        default -> System.out.println("Not a valid task");
+//                    }
+//                } catch (PenguinBotException e) {
+//                    System.out.println("    ____________________________________________________________\n"
+//                            + "     Skipping bad entry: " + e.getMessage() + "\n"
+//                            + "    ____________________________________________________________");
+//                }
+//            }
+//        }
 
-    private static String extractDescription(String[] parts) {
-        if (parts.length >= 3) {
-            return parts[2];
-        }
-        if (parts.length == 2) {
-            return parts[1].replaceFirst("^\\[[X ]]\\s*", "");
-        }
-        return "";
-    }
 
-    private static String extractDateSegment(String[] parts, String prefix) throws PenguinBotException {
-        String candidate = parts.length >= 4 ? parts[3] : (parts.length == 3 ? parts[2] : "");
-        if (!candidate.toLowerCase().startsWith(prefix)) {
-            throw new PenguinBotException("Missing " + prefix + " segment");
-        }
-        return candidate.substring(prefix.length()).trim().replaceFirst("^:", "").trim();
-    }
-
-    private static LocalDateTime parseStoredDateTime(String raw) throws PenguinBotException {
-        try {
-            return LocalDateTime.parse(raw.trim(), STORAGE_DATE_TIME);
-        } catch (DateTimeParseException e) {
-            throw new PenguinBotException("Invalid stored date-time: " + raw);
-        }
     }
 
     private static LocalDateTime parseUserDateTime(String raw, String label) throws PenguinBotException {
