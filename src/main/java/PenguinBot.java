@@ -1,9 +1,18 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PenguinBot {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         String initialPrompt = """
                     ____________________________________________________________
                      Hello! I'm PenguinBot
@@ -14,12 +23,89 @@ public class PenguinBot {
         System.out.println(initialPrompt);
 
         ArrayList<Task> list = new ArrayList<>();
+
+        // Load the file
+        String filePathString = "./src/data/TaskList.txt";
+        Path filePath = Paths.get(filePathString);
+        Path parentDir = filePath.getParent();
+
+        // Handle file not found problem
+        try {
+            if (parentDir != null) {
+                Files.createDirectories(parentDir);
+                System.out.println("Directory ensured: " + parentDir.toString());
+            }
+
+            if (Files.notExists(filePath)) {
+                Files.createFile(filePath);
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to create directory/file: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        File textListFile = new File(filePathString);
+        Scanner fileScanner = new Scanner(textListFile);
+
+        // Load the string into task objects
+        while (fileScanner.hasNext()) {
+            String taskString = fileScanner.nextLine();
+            String[] parts = taskString.split(" \\| ");
+            // decide which type of task it is
+            switch (parts[0]) {
+                case "T":
+                    // It is a TODO task
+                    Task todoTask = new ToDo(parts[2]);
+                    list.add(todoTask);
+                    break;
+
+                case "D":
+                    // It is a Deadline task
+                    String BY_PREFIX = "by: ";
+                    Task deadlineTask = new Deadline(
+                            parts[2],
+                            parts[3].substring(BY_PREFIX.length())
+                    );
+
+                    list.add(deadlineTask);
+                    break;
+
+                case "E":
+                    // It is an Event task
+                    Pattern pattern = Pattern.compile("from: (.*?) to: (.*)");
+                    Matcher matcher = pattern.matcher(parts[3]);
+
+                    Task eventTask = new Event(
+                            parts[2],
+                            matcher.group(1),
+                            matcher.group(2)
+                    );
+
+                    list.add(eventTask);
+                    break;
+
+                default:
+                    System.out.println("Not a valid task");
+            }
+        }
+
         Scanner scanner = new Scanner(System.in);
 
         while (scanner.hasNextLine()) {
             String userInput = scanner.nextLine();
             try {
                 if (userInput.equals("bye")) {
+                    // Write the list into the file
+                    try {
+                        FileWriter fw = new FileWriter(filePathString, false);
+                        for (Task task : list) {
+                            fw.write(task.toString());
+                            fw.close();
+                        }
+                    } catch (FileNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+
                     System.out.println("""
                             ____________________________________________________________
                              Bye. Hope to see you again soon!
