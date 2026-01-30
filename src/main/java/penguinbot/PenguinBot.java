@@ -51,15 +51,4 @@ public class PenguinBot {
     public static void main(String[] args) throws IOException {
         new PenguinBot("./src/data/TaskList.txt").run();
     }
-
-    private static LocalDateTime parseUserDateTime(String raw, String label) throws PenguinBotException {
-        if (raw == null || raw.isBlank()) {
-            throw new PenguinBotException("Missing " + label + " date-time (use ISO e.g. 2024-02-01T13:30).");
-        }
-        try {
-            return LocalDateTime.parse(raw.trim(), STORAGE_DATE_TIME);
-        } catch (DateTimeParseException e) {
-            throw new PenguinBotException("Invalid " + label + " date-time (use ISO e.g. 2024-02-01T13:30).");
-        }
-    }
 }
