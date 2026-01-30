@@ -83,6 +83,12 @@ public class Parser {
                             int number = Integer.parseInt(parts[1]);
                             taskList.deleteTask(number);
                         }
+                        case FIND -> {
+                            if (parameters.isBlank()) {
+                                throw new PenguinBotException("Find task needs a keyword.");
+                            }
+                            taskList.findTasks(parameters);
+                        }
                         case TODO -> {
                             if (parameters.isBlank()) {
                                 throw new PenguinBotException("Todo needs a description.");

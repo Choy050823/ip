@@ -8,5 +8,6 @@ public enum Actions {
     UNMARK,
     TODO,
     DEADLINE,
-    EVENT
+    EVENT,
+    FIND
 }
