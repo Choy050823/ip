@@ -1,6 +1,7 @@
 package penguinbot;
 
 import penguinbot.exceptions.PenguinBotException;
+
 import penguinbot.services.Parser;
 import penguinbot.services.Storage;
 import penguinbot.services.TaskList;

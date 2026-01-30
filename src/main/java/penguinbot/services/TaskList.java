@@ -45,11 +45,13 @@ public class TaskList {
      */
     public void addTask(Task task) {
         this.tasks.add(task);
-        System.out.println("    ____________________________________________________________\n" +
-                "     Got it. I've added this task:\n" +
-                "       " + task + "\n" +
-                "     Now you have " + tasks.size() + " tasks in the list.\n" +
-                "    ____________________________________________________________\n");
+        System.out.println(
+                "    ____________________________________________________________\n"
+                + "     Got it. I've added this task:\n"
+                + "       " + task + "\n"
+                + "     Now you have " + tasks.size() + " tasks in the list.\n"
+                + "    ____________________________________________________________\n"
+        );
     }
 
     /**
@@ -61,11 +63,13 @@ public class TaskList {
         if (tasks.get(number - 1) != null) {
             Task task = tasks.get(number - 1);
             tasks.remove(number - 1);
-            System.out.println("    ____________________________________________________________\n" +
-                    "     Noted. I've removed this task:\n" +
-                    "       " + task.toString() + "\n" +
-                    "     Now you have " + tasks.size() + " tasks in the list.\n" +
-                    "    ____________________________________________________________");
+            System.out.println(
+                    "    ____________________________________________________________\n"
+                    + "     Noted. I've removed this task:\n"
+                    + "       " + task.toString() + "\n"
+                    + "     Now you have " + tasks.size() + " tasks in the list.\n"
+                    + "    ____________________________________________________________"
+            );
         }
     }
 
@@ -76,10 +80,12 @@ public class TaskList {
      */
     public void markTask(int number) {
         tasks.get(number - 1).markAsDone();
-        System.out.println("    ____________________________________________________________\n" +
-                "     OK, I've marked this task as not done yet:\n" +
-                "       " + tasks.get(number - 1).toString() + "\n" +
-                "    ____________________________________________________________");
+        System.out.println(
+                "    ____________________________________________________________\n"
+                + "     OK, I've marked this task as not done yet:\n"
+                + "       " + tasks.get(number - 1).toString() + "\n"
+                + "    ____________________________________________________________"
+        );
     }
 
     /**
@@ -89,10 +95,12 @@ public class TaskList {
      */
     public void unmarkTask(int number) {
         tasks.get(number - 1).markAsUndone();
-        System.out.println("    ____________________________________________________________\n" +
-                "     Nice! I've marked this task as done:\n" +
-                "       " + tasks.get(number - 1).toString() + "\n" +
-                "    ____________________________________________________________");
+        System.out.println(
+                "    ____________________________________________________________\n"
+                + "     Nice! I've marked this task as done:\n"
+                + "       " + tasks.get(number - 1).toString() + "\n"
+                + "    ____________________________________________________________"
+        );
     }
 
     /**
@@ -109,9 +117,11 @@ public class TaskList {
                     .append("\n");
             i++;
         }
-        System.out.println("    ____________________________________________________________\n" +
-                output + "\n" +
-                "    ____________________________________________________________\n");
+        System.out.println(
+                "    ____________________________________________________________\n"
+                + output + "\n"
+                + "    ____________________________________________________________\n"
+        );
     }
 
     /**

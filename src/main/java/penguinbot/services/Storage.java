@@ -92,7 +92,7 @@ public class Storage {
                         }
                         case "D" -> {
                             String description = extractDescription(parts);
-                            String byRaw = extractDateSegment(parts, "by:");
+                            String byRaw = extractDateSegment(parts);
                             LocalDateTime by = parseStoredDateTime(byRaw);
                             Task deadlineTask = new Deadline(description, by);
                             if (isDone) {
@@ -106,7 +106,10 @@ public class Storage {
                             if (!timeSegment.toLowerCase().startsWith("from:")) {
                                 throw new PenguinBotException("Missing from: segment");
                             }
-                            Pattern pattern = Pattern.compile("from:\\s*(.*?)\\s*to:\\s*(.*)", Pattern.CASE_INSENSITIVE);
+                            Pattern pattern = Pattern.compile(
+                                    "from:\\s*(.*?)\\s*to:\\s*(.*)",
+                                    Pattern.CASE_INSENSITIVE
+                            );
                             Matcher matcher = pattern.matcher(timeSegment.trim());
                             if (!matcher.matches()) {
                                 throw new PenguinBotException("Corrupted event line");
@@ -122,9 +125,11 @@ public class Storage {
                         default -> System.out.println("Not a valid task");
                     }
                 } catch (PenguinBotException e) {
-                    System.out.println("    ____________________________________________________________\n"
+                    System.out.println(
+                            "    ____________________________________________________________\n"
                             + "     Skipping bad entry: " + e.getMessage() + "\n"
-                            + "    ____________________________________________________________");
+                            + "    ____________________________________________________________"
+                    );
                 }
             }
         }
@@ -138,10 +143,10 @@ public class Storage {
      * @param list tasks to persist.
      * @throws PenguinBotException when writing fails.
      */
-    public void storeTasks(List<Task> list) throws PenguinBotException {
-        // Write the list into the file
+    public void storeTasks(List<Task> tasks) throws PenguinBotException {
+        // Write the tasks into the file
         try (FileWriter fw = new FileWriter(filePathString, false)) {
-            for (Task task : list) {
+            for (Task task : tasks) {
                 fw.write(task.toString());
                 fw.write(System.lineSeparator());
             }
@@ -161,13 +166,7 @@ public class Storage {
             return false;
         }
         String token = parts[1].trim();
-        if ("1".equals(token)) {
-            return true;
-        }
-        if ("0".equals(token)) {
-            return false;
-        }
-        return token.startsWith("[X]");
+        return "1".equals(token);
     }
 
     /**
@@ -194,12 +193,13 @@ public class Storage {
      * @return the trimmed date-time segment.
      * @throws PenguinBotException when the prefix is missing.
      */
-    private static String extractDateSegment(String[] parts, String prefix) throws PenguinBotException {
+    private static String extractDateSegment(String[] parts)
+            throws PenguinBotException {
         String candidate = parts.length >= 4 ? parts[3] : (parts.length == 3 ? parts[2] : "");
-        if (!candidate.toLowerCase().startsWith(prefix)) {
-            throw new PenguinBotException("Missing " + prefix + " segment");
+        if (!candidate.toLowerCase().startsWith("by:")) {
+            throw new PenguinBotException("Missing " + "by:" + " segment");
         }
-        return candidate.substring(prefix.length()).trim().replaceFirst("^:", "").trim();
+        return candidate.substring("by:".length()).trim().replaceFirst("^:", "").trim();
     }
 
     /**
@@ -209,7 +209,8 @@ public class Storage {
      * @return parsed {@link LocalDateTime}.
      * @throws PenguinBotException when the value cannot be parsed.
      */
-    private static LocalDateTime parseStoredDateTime(String raw) throws PenguinBotException {
+    private static LocalDateTime parseStoredDateTime(String raw)
+            throws PenguinBotException {
         try {
             return LocalDateTime.parse(raw.trim(), STORAGE_DATE_TIME);
         } catch (DateTimeParseException e) {

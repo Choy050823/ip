@@ -1,7 +1,8 @@
 package penguinbot.services;
 
-import penguinbot.models.actions;
 import penguinbot.exceptions.PenguinBotException;
+
+import penguinbot.models.Actions;
 import penguinbot.models.Deadline;
 import penguinbot.models.Event;
 import penguinbot.models.ToDo;
@@ -14,7 +15,7 @@ import java.time.format.DateTimeParseException;
  */
 public class Parser {
     /** Task list being manipulated. */
-    private TaskList tasks;
+    private TaskList taskList;
 
     /** Storage handler for persistence on exit. */
     private Storage storage;
@@ -31,8 +32,8 @@ public class Parser {
      * @param storage storage for persistence.
      * @param ui      user interface helper.
      */
-    public Parser(TaskList tasks, Storage storage, Ui ui) {
-        this.tasks = tasks;
+    public Parser(TaskList taskList, Storage storage, Ui ui) {
+        this.taskList = taskList;
         this.storage = storage;
         this.ui = ui;
         this.isExit = false;
@@ -57,37 +58,37 @@ public class Parser {
         try {
             if (userInput.equals("bye")) {
                 // Write the list into the file
-                tasks.storeTasksToStorage(storage);
+                taskList.storeTasksToStorage(storage);
                 this.isExit = true;
 
             } else if (userInput.equals("list")) {
-                tasks.printTasks();
+                taskList.printTasks();
             } else {
                 String[] parts = userInput.split("\\s+");
                 String action = parts[0];
 
                 final String parameters = userInput.substring(action.length()).trim();
                 try {
-                    actions parsedAction = actions.valueOf(action.toUpperCase());
+                    Actions parsedAction = Actions.valueOf(action.toUpperCase());
                     switch (parsedAction) {
                         case MARK -> {
                             int number = Integer.parseInt(parts[1]);
-                            tasks.markTask(number);
+                            taskList.markTask(number);
                         }
                         case UNMARK -> {
                             int number = Integer.parseInt(parts[1]);
-                            tasks.unmarkTask(number);
+                            taskList.unmarkTask(number);
                         }
                         case DELETE -> {
                             int number = Integer.parseInt(parts[1]);
-                            tasks.deleteTask(number);
+                            taskList.deleteTask(number);
                         }
                         case TODO -> {
                             if (parameters.isBlank()) {
                                 throw new PenguinBotException("Todo needs a description.");
                             }
                             ToDo toDo = new ToDo(parameters);
-                            tasks.addTask(toDo);
+                            taskList.addTask(toDo);
                         }
                         case DEADLINE -> {
                             String by = "";
@@ -97,11 +98,13 @@ public class Parser {
                                 by = bySplit[1].trim();
                             }
                             if (description.isEmpty() || by.isEmpty()) {
-                                throw new PenguinBotException("penguinbot.task.Deadline needs description and ISO date-time (e.g. 2024-02-01T13:30).");
+                                throw new PenguinBotException(
+                                        "Deadline needs description and ISO date-time (e.g. 2024-02-01T13:30)."
+                                );
                             }
                             LocalDateTime byDateTime = parseUserDateTime(by, "deadline");
                             Deadline deadlineTask = new Deadline(description, byDateTime);
-                            tasks.addTask(deadlineTask);
+                            taskList.addTask(deadlineTask);
                         }
                         case EVENT -> {
                             String startTime = "";
@@ -116,12 +119,15 @@ public class Parser {
                                 }
                             }
                             if (description.isEmpty() || startTime.isEmpty() || endTime.isEmpty()) {
-                                throw new PenguinBotException("penguinbot.task.Event needs description, start, and end in ISO date-time (e.g. 2024-02-01T13:30).");
+                                throw new PenguinBotException(
+                                        "Event needs description, start, and end "
+                                                + "in ISO date-time (e.g. 2024-02-01T13:30)."
+                                );
                             }
                             LocalDateTime start = parseUserDateTime(startTime, "event start");
                             LocalDateTime end = parseUserDateTime(endTime, "event end");
                             Event eventTask = new Event(description, start, end);
-                            tasks.addTask(eventTask);
+                            taskList.addTask(eventTask);
                         }
                     }
                 } catch (IllegalArgumentException e) {
@@ -143,7 +149,8 @@ public class Parser {
      * @return parsed {@link LocalDateTime}.
      * @throws PenguinBotException when parsing fails or input is blank.
      */
-    private static LocalDateTime parseUserDateTime(String raw, String label) throws PenguinBotException {
+    private static LocalDateTime parseUserDateTime(
+            String raw, String label) throws PenguinBotException {
         if (raw == null || raw.isBlank()) {
             throw new PenguinBotException("Missing " + label + " date-time (use ISO e.g. 2024-02-01T13:30).");
         }

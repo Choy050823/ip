@@ -20,14 +20,14 @@ public class Ui {
      * Displays the welcome message.
      */
     public void showWelcome() {
-        String initialPrompt = """
+        System.out.println(
+                """
                     ____________________________________________________________
                      Hello! I'm PenguinBot
                      What can I do for you?
                     ____________________________________________________________
-                """;
-
-        System.out.println(initialPrompt);
+                """
+        );
     }
 
     /**
