@@ -22,15 +22,33 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Handles persistence of tasks to and from the backing text file.
+ */
 public class Storage {
+    /** Formatter used to serialize and deserialize {@link java.time.LocalDateTime}. */
     public static final DateTimeFormatter STORAGE_DATE_TIME = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
+    /** Absolute or relative path to the task storage file. */
     private final String filePathString;
 
+    /**
+     * Creates a storage instance bound to the given file path.
+     *
+     * @param filePathString path to the storage file.
+     */
     public Storage(String filePathString) {
         this.filePathString = filePathString;
     }
 
+    /**
+     * Loads all tasks from the storage file, creating the file and its parent
+     * directories when missing, and skipping corrupted lines.
+     *
+     * @return list of tasks loaded from disk.
+     * @throws PenguinBotException   when a recoverable parsing issue occurs.
+     * @throws FileNotFoundException when the file cannot be opened.
+     */
     public List<Task> loadTasks() throws PenguinBotException, FileNotFoundException {
         ArrayList<Task> tasks = new ArrayList<>();
 
@@ -114,6 +132,12 @@ public class Storage {
         return tasks;
     }
 
+    /**
+     * Persists all tasks to the storage file, replacing any existing content.
+     *
+     * @param list tasks to persist.
+     * @throws PenguinBotException when writing fails.
+     */
     public void storeTasks(List<Task> list) throws PenguinBotException {
         // Write the list into the file
         try (FileWriter fw = new FileWriter(filePathString, false)) {
@@ -126,6 +150,12 @@ public class Storage {
         }
     }
 
+    /**
+     * Parses the completion flag from a serialized task line.
+     *
+     * @param parts tokenized task line.
+     * @return true if the task is marked done.
+     */
     private static boolean parseDone(String[] parts) {
         if (parts.length < 2) {
             return false;
@@ -140,6 +170,12 @@ public class Storage {
         return token.startsWith("[X]");
     }
 
+    /**
+     * Extracts the task description from serialized parts.
+     *
+     * @param parts tokenized task line.
+     * @return description string, possibly empty.
+     */
     private static String extractDescription(String[] parts) {
         if (parts.length >= 3) {
             return parts[2];
@@ -150,6 +186,14 @@ public class Storage {
         return "";
     }
 
+    /**
+     * Extracts a date segment prefixed by the given label.
+     *
+     * @param parts   tokenized task line.
+     * @param prefix  expected prefix (e.g., "by:" or "from:").
+     * @return the trimmed date-time segment.
+     * @throws PenguinBotException when the prefix is missing.
+     */
     private static String extractDateSegment(String[] parts, String prefix) throws PenguinBotException {
         String candidate = parts.length >= 4 ? parts[3] : (parts.length == 3 ? parts[2] : "");
         if (!candidate.toLowerCase().startsWith(prefix)) {
@@ -158,6 +202,13 @@ public class Storage {
         return candidate.substring(prefix.length()).trim().replaceFirst("^:", "").trim();
     }
 
+    /**
+     * Parses a stored date-time string into {@link LocalDateTime}.
+     *
+     * @param raw serialized date-time.
+     * @return parsed {@link LocalDateTime}.
+     * @throws PenguinBotException when the value cannot be parsed.
+     */
     private static LocalDateTime parseStoredDateTime(String raw) throws PenguinBotException {
         try {
             return LocalDateTime.parse(raw.trim(), STORAGE_DATE_TIME);
