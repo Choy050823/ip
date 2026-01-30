@@ -28,7 +28,7 @@ public class Parser {
     /**
      * Creates a parser with dependencies injected.
      *
-     * @param tasks   task list to modify.
+     * @param taskList   task list to modify.
      * @param storage storage for persistence.
      * @param ui      user interface helper.
      */
