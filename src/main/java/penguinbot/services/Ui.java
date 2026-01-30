@@ -1,3 +1,7 @@
+package penguinbot.services;
+
+import penguinbot.exceptions.PenguinBotException;
+
 import java.util.Scanner;
 
 public class Ui {

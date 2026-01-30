@@ -1,4 +1,6 @@
-public class ToDo extends Task{
+package penguinbot.models;
+
+public class ToDo extends Task {
 
     public ToDo(String description) {
         super(description);

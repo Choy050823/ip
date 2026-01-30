@@ -1,3 +1,11 @@
+package penguinbot.services;
+
+import penguinbot.models.actions;
+import penguinbot.exceptions.PenguinBotException;
+import penguinbot.models.Deadline;
+import penguinbot.models.Event;
+import penguinbot.models.ToDo;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 
@@ -62,7 +70,7 @@ public class Parser {
                                 by = bySplit[1].trim();
                             }
                             if (description.isEmpty() || by.isEmpty()) {
-                                throw new PenguinBotException("Deadline needs description and ISO date-time (e.g. 2024-02-01T13:30).");
+                                throw new PenguinBotException("penguinbot.task.Deadline needs description and ISO date-time (e.g. 2024-02-01T13:30).");
                             }
                             LocalDateTime byDateTime = parseUserDateTime(by, "deadline");
                             Deadline deadlineTask = new Deadline(description, byDateTime);
@@ -81,7 +89,7 @@ public class Parser {
                                 }
                             }
                             if (description.isEmpty() || startTime.isEmpty() || endTime.isEmpty()) {
-                                throw new PenguinBotException("Event needs description, start, and end in ISO date-time (e.g. 2024-02-01T13:30).");
+                                throw new PenguinBotException("penguinbot.task.Event needs description, start, and end in ISO date-time (e.g. 2024-02-01T13:30).");
                             }
                             LocalDateTime start = parseUserDateTime(startTime, "event start");
                             LocalDateTime end = parseUserDateTime(endTime, "event end");

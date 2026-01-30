@@ -1,3 +1,8 @@
+package penguinbot.services;
+
+import penguinbot.exceptions.PenguinBotException;
+import penguinbot.models.Task;
+
 import java.util.ArrayList;
 import java.util.List;
 
