@@ -1,5 +1,4 @@
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,8 +8,13 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class PenguinBot {
+
+    private static final DateTimeFormatter STORAGE_DATE_TIME = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     public static void main(String[] args) throws IOException {
         String initialPrompt = """
@@ -29,11 +33,10 @@ public class PenguinBot {
         Path filePath = Paths.get(filePathString);
         Path parentDir = filePath.getParent();
 
-        // Handle file not found problem
+        // Handle the file not found problems
         try {
             if (parentDir != null) {
                 Files.createDirectories(parentDir);
-                System.out.println("Directory ensured: " + parentDir.toString());
             }
 
             if (Files.notExists(filePath)) {
@@ -41,51 +44,62 @@ public class PenguinBot {
             }
         } catch (IOException e) {
             System.err.println("Failed to create directory/file: " + e.getMessage());
-            e.printStackTrace();
         }
 
         File textListFile = new File(filePathString);
-        Scanner fileScanner = new Scanner(textListFile);
-
-        // Load the string into task objects
-        while (fileScanner.hasNext()) {
-            String taskString = fileScanner.nextLine();
-            String[] parts = taskString.split(" \\| ");
-            // decide which type of task it is
-            switch (parts[0]) {
-                case "T":
-                    // It is a TODO task
-                    Task todoTask = new ToDo(parts[2]);
-                    list.add(todoTask);
-                    break;
-
-                case "D":
-                    // It is a Deadline task
-                    String BY_PREFIX = "by: ";
-                    Task deadlineTask = new Deadline(
-                            parts[2],
-                            parts[3].substring(BY_PREFIX.length())
-                    );
-
-                    list.add(deadlineTask);
-                    break;
-
-                case "E":
-                    // It is an Event task
-                    Pattern pattern = Pattern.compile("from: (.*?) to: (.*)");
-                    Matcher matcher = pattern.matcher(parts[3]);
-
-                    Task eventTask = new Event(
-                            parts[2],
-                            matcher.group(1),
-                            matcher.group(2)
-                    );
-
-                    list.add(eventTask);
-                    break;
-
-                default:
-                    System.out.println("Not a valid task");
+        try (Scanner fileScanner = new Scanner(textListFile)) {
+            // Load the string into task objects
+            while (fileScanner.hasNext()) {
+                String taskString = fileScanner.nextLine();
+                String[] parts = taskString.split(" \\| ");
+                if (parts.length == 0 || parts[0].isBlank()) {
+                    continue;
+                }
+                try {
+                    boolean isDone = parseDone(parts);
+                    String type = parts[0].trim();
+                    switch (type) {
+                        case "T" -> {
+                            String description = extractDescription(parts);
+                            Task todoTask = new ToDo(description);
+                            if (isDone) {
+                                todoTask.markAsDone();
+                            }
+                            list.add(todoTask);
+                        }
+                        case "D" -> {
+                            String description = extractDescription(parts);
+                            String byRaw = extractDateSegment(parts, "by:");
+                            LocalDateTime by = parseStoredDateTime(byRaw);
+                            Task deadlineTask = new Deadline(description, by);
+                            if (isDone) {
+                                deadlineTask.markAsDone();
+                            }
+                            list.add(deadlineTask);
+                        }
+                        case "E" -> {
+                            String description = extractDescription(parts);
+                            String timeSegment = extractDateSegment(parts, "from:");
+                            Pattern pattern = Pattern.compile("from: (.*?) to: (.*)");
+                            Matcher matcher = pattern.matcher(timeSegment);
+                            if (!matcher.find()) {
+                                throw new PenguinBotException("Corrupted event line");
+                            }
+                            LocalDateTime start = parseStoredDateTime(matcher.group(1));
+                            LocalDateTime end = parseStoredDateTime(matcher.group(2));
+                            Task eventTask = new Event(description, start, end);
+                            if (isDone) {
+                                eventTask.markAsDone();
+                            }
+                            list.add(eventTask);
+                        }
+                        default -> System.out.println("Not a valid task");
+                    }
+                } catch (PenguinBotException e) {
+                    System.out.println("    ____________________________________________________________\n"
+                            + "     Skipping bad entry: " + e.getMessage() + "\n"
+                            + "    ____________________________________________________________");
+                }
             }
         }
 
@@ -96,14 +110,13 @@ public class PenguinBot {
             try {
                 if (userInput.equals("bye")) {
                     // Write the list into the file
-                    try {
-                        FileWriter fw = new FileWriter(filePathString, false);
+                    try (FileWriter fw = new FileWriter(filePathString, false)) {
                         for (Task task : list) {
                             fw.write(task.toString());
-                            fw.close();
+                            fw.write(System.lineSeparator());
                         }
-                    } catch (FileNotFoundException e) {
-                        throw new RuntimeException(e);
+                    } catch (IOException e) {
+                        throw new PenguinBotException("Failed to save tasks: " + e.getMessage());
                     }
 
                     System.out.println("""
@@ -185,7 +198,11 @@ public class PenguinBot {
                                 if (bySplit.length > 1) {
                                     by = bySplit[1].trim();
                                 }
-                                Deadline deadlineTask = new Deadline(description, by);
+                                if (description.isEmpty() || by.isEmpty()) {
+                                    throw new PenguinBotException("Deadline needs description and ISO date-time (e.g. 2024-02-01T13:30).");
+                                }
+                                LocalDateTime byDateTime = parseUserDateTime(by, "deadline");
+                                Deadline deadlineTask = new Deadline(description, byDateTime);
                                 list.add(deadlineTask);
                                 System.out.println("    ____________________________________________________________\n" +
                                         "     Got it. I've added this task:\n" +
@@ -205,7 +222,12 @@ public class PenguinBot {
                                         endTime = toSplit[1].trim();
                                     }
                                 }
-                                Event eventTask = new Event(description, startTime, endTime);
+                                if (description.isEmpty() || startTime.isEmpty() || endTime.isEmpty()) {
+                                    throw new PenguinBotException("Event needs description, start, and end in ISO date-time (e.g. 2024-02-01T13:30).");
+                                }
+                                LocalDateTime start = parseUserDateTime(startTime, "event start");
+                                LocalDateTime end = parseUserDateTime(endTime, "event end");
+                                Event eventTask = new Event(description, start, end);
                                 list.add(eventTask);
                                 System.out.println("    ____________________________________________________________\n" +
                                         "     Got it. I've added this task:\n" +
@@ -226,6 +248,57 @@ public class PenguinBot {
                         "     " + e.getMessage() + "\n" +
                         "    ____________________________________________________________");
             }
+        }
+    }
+
+    private static boolean parseDone(String[] parts) {
+        if (parts.length < 2) {
+            return false;
+        }
+        String token = parts[1].trim();
+        if ("1".equals(token)) {
+            return true;
+        }
+        if ("0".equals(token)) {
+            return false;
+        }
+        return token.startsWith("[X]");
+    }
+
+    private static String extractDescription(String[] parts) {
+        if (parts.length >= 3) {
+            return parts[2];
+        }
+        if (parts.length == 2) {
+            return parts[1].replaceFirst("^\\[[X ]]\\s*", "");
+        }
+        return "";
+    }
+
+    private static String extractDateSegment(String[] parts, String prefix) throws PenguinBotException {
+        String candidate = parts.length >= 4 ? parts[3] : (parts.length == 3 ? parts[2] : "");
+        if (!candidate.toLowerCase().startsWith(prefix)) {
+            throw new PenguinBotException("Missing " + prefix + " segment");
+        }
+        return candidate.substring(prefix.length()).trim().replaceFirst("^:", "").trim();
+    }
+
+    private static LocalDateTime parseStoredDateTime(String raw) throws PenguinBotException {
+        try {
+            return LocalDateTime.parse(raw.trim(), STORAGE_DATE_TIME);
+        } catch (DateTimeParseException e) {
+            throw new PenguinBotException("Invalid stored date-time: " + raw);
+        }
+    }
+
+    private static LocalDateTime parseUserDateTime(String raw, String label) throws PenguinBotException {
+        if (raw == null || raw.isBlank()) {
+            throw new PenguinBotException("Missing " + label + " date-time (use ISO e.g. 2024-02-01T13:30).");
+        }
+        try {
+            return LocalDateTime.parse(raw.trim(), STORAGE_DATE_TIME);
+        } catch (DateTimeParseException e) {
+            throw new PenguinBotException("Invalid " + label + " date-time (use ISO e.g. 2024-02-01T13:30).");
         }
     }
 }

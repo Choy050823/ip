@@ -1,8 +1,10 @@
-public class Event extends Task{
-    protected String startTime;
-    protected String endTime;
+import java.time.LocalDateTime;
 
-    public Event(String description, String startTime, String endTime) {
+public class Event extends Task{
+    protected LocalDateTime startTime;
+    protected LocalDateTime endTime;
+
+    public Event(String description, LocalDateTime startTime, LocalDateTime endTime) {
         super(description);
         this.startTime = startTime;
         this.endTime = endTime;
@@ -11,14 +13,6 @@ public class Event extends Task{
     @Override
     public String getTaskType() {
         return "E";
-    }
-
-    public String getStartTime() {
-        return startTime;
-    }
-
-    public String getEndTime() {
-        return endTime;
     }
 
     @Override
