@@ -1,6 +1,6 @@
 package penguinbot.services;
 
-import penguinbot.models.actions;
+import penguinbot.models.Actions;
 import penguinbot.exceptions.PenguinBotException;
 import penguinbot.models.Deadline;
 import penguinbot.models.Event;
@@ -41,7 +41,7 @@ public class Parser {
 
                 final String parameters = userInput.substring(action.length()).trim();
                 try {
-                    actions parsedAction = actions.valueOf(action.toUpperCase());
+                    Actions parsedAction = Actions.valueOf(action.toUpperCase());
                     switch (parsedAction) {
                         case MARK -> {
                             int number = Integer.parseInt(parts[1]);
@@ -54,6 +54,12 @@ public class Parser {
                         case DELETE -> {
                             int number = Integer.parseInt(parts[1]);
                             tasks.deleteTask(number);
+                        }
+                        case FIND -> {
+                            if (parameters.isBlank()) {
+                                throw new PenguinBotException("Find task needs a keyword.");
+                            }
+                            tasks.findTasks(parameters);
                         }
                         case TODO -> {
                             if (parameters.isBlank()) {

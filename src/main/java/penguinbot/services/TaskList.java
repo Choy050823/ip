@@ -77,4 +77,17 @@ public class TaskList {
     public void storeTasksToStorage(Storage storage) throws PenguinBotException {
         storage.storeTasks(tasks);
     }
+
+    public void findTasks(String keyword) {
+        System.out.println("    ____________________________________________________________");
+        System.out.println("     Here are the matching tasks in your list:");
+        int count = 1;
+        for (Task task : tasks) {
+            if (task.toString().contains(keyword)) {
+                System.out.println("     " + count + "." + task.toString());
+                count++;
+            }
+        }
+        System.out.println("    ____________________________________________________________");
+    }
 }

@@ -1,6 +1,6 @@
 package penguinbot.models;
 
-public enum actions {
+public enum Actions {
     BYE,
     LIST,
     DELETE,
@@ -8,5 +8,6 @@ public enum actions {
     UNMARK,
     TODO,
     DEADLINE,
-    EVENT
+    EVENT,
+    FIND
 }
