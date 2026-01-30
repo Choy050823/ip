@@ -17,6 +17,10 @@ public class TaskList {
         this.tasks = new ArrayList<>();
     }
 
+    public List<Task> getTasks() {
+        return this.tasks;
+    }
+
     public void addTask(Task task) {
         this.tasks.add(task);
         System.out.println("    ____________________________________________________________\n" +

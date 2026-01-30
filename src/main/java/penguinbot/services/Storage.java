@@ -84,10 +84,13 @@ public class Storage {
                         }
                         case "E" -> {
                             String description = extractDescription(parts);
-                            String timeSegment = extractDateSegment(parts, "from:");
-                            Pattern pattern = Pattern.compile("from: (.*?) to: (.*)");
-                            Matcher matcher = pattern.matcher(timeSegment);
-                            if (!matcher.find()) {
+                            String timeSegment = parts.length >= 4 ? parts[3] : "";
+                            if (!timeSegment.toLowerCase().startsWith("from:")) {
+                                throw new PenguinBotException("Missing from: segment");
+                            }
+                            Pattern pattern = Pattern.compile("from:\\s*(.*?)\\s*to:\\s*(.*)", Pattern.CASE_INSENSITIVE);
+                            Matcher matcher = pattern.matcher(timeSegment.trim());
+                            if (!matcher.matches()) {
                                 throw new PenguinBotException("Corrupted event line");
                             }
                             LocalDateTime start = parseStoredDateTime(matcher.group(1));
