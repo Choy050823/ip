@@ -1,3 +1,5 @@
+import java.util.Scanner;
+
 public class Ui {
 
     public Ui() {
@@ -17,5 +19,18 @@ public class Ui {
 
     public void showPenguinBotExceptionMessage(PenguinBotException e) {
         System.out.println(e.getMessage());
+    }
+
+    public void showLine() {
+        System.out.println("    ____________________________________________________________\n");
+    }
+
+    public String readCommand() {
+        Scanner scanner = new Scanner(System.in);
+        if (scanner.hasNextLine()) {
+            return scanner.nextLine();
+        } else {
+            return "";
+        }
     }
 }
