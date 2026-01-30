@@ -3,12 +3,13 @@ package penguinbot.services;
 import org.junit.jupiter.api.Test;
 import penguinbot.models.ToDo;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TaskListTest {
 
     @Test
-    void addTask_increasesSize() throws Exception {
+    void addTask_increasesSize() {
         TaskList list = new TaskList();
         list.addTask(new ToDo("read"));
 
@@ -16,7 +17,7 @@ class TaskListTest {
     }
 
     @Test
-    void deleteTask_decreasesSize() throws Exception {
+    void deleteTask_decreasesSize() {
         TaskList list = new TaskList();
         list.addTask(new ToDo("read"));
         list.addTask(new ToDo("write"));
@@ -27,7 +28,7 @@ class TaskListTest {
     }
 
     @Test
-    void markAndUnmark_toggleDoneStateInString() throws Exception {
+    void markAndUnmark_toggleDoneStateInString() {
         TaskList list = new TaskList();
         list.addTask(new ToDo("read"));
 

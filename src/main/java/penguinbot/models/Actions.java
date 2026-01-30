@@ -1,6 +1,6 @@
 package penguinbot.models;
 
-public enum actions {
+public enum Actions {
     BYE,
     LIST,
     DELETE,

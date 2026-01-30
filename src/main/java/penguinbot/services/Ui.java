@@ -11,14 +11,14 @@ public class Ui {
     }
 
     public void showWelcome() {
-        String initialPrompt = """
+        System.out.println(
+                """
                     ____________________________________________________________
                      Hello! I'm PenguinBot
                      What can I do for you?
                     ____________________________________________________________
-                """;
-
-        System.out.println(initialPrompt);
+                """
+        );
     }
 
     public void showPenguinBotExceptionMessage(PenguinBotException e) {

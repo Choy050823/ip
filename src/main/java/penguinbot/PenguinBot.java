@@ -1,16 +1,13 @@
 package penguinbot;
 
 import penguinbot.exceptions.PenguinBotException;
+
 import penguinbot.services.Parser;
 import penguinbot.services.Storage;
 import penguinbot.services.TaskList;
 import penguinbot.services.Ui;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 
 public class PenguinBot {
 
@@ -19,8 +16,6 @@ public class PenguinBot {
     private TaskList tasks;
 
     private final Ui ui;
-
-    private static final DateTimeFormatter STORAGE_DATE_TIME = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     public PenguinBot(String filePathString) {
         ui = new Ui();
@@ -48,7 +43,7 @@ public class PenguinBot {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         new PenguinBot("./src/data/TaskList.txt").run();
     }
 }
