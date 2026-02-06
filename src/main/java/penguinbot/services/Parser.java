@@ -54,15 +54,16 @@ public class Parser {
      *
      * @param userInput raw input string.
      */
-    public void parseAndExecute(String userInput) {
+    public String parseAndExecute(String userInput) {
         try {
             if (userInput.equals("bye")) {
                 // Write the list into the file
                 taskList.storeTasksToStorage(storage);
                 this.isExit = true;
+                return "Saved tasks! Exiting...";
 
             } else if (userInput.equals("list")) {
-                taskList.printTasks();
+                return taskList.printTasks();
             } else {
                 String[] parts = userInput.split("\\s+");
                 String action = parts[0];
@@ -73,28 +74,28 @@ public class Parser {
                     switch (parsedAction) {
                         case MARK -> {
                             int number = Integer.parseInt(parts[1]);
-                            taskList.markTask(number);
+                            return taskList.markTask(number);
                         }
                         case UNMARK -> {
                             int number = Integer.parseInt(parts[1]);
-                            taskList.unmarkTask(number);
+                            return taskList.unmarkTask(number);
                         }
                         case DELETE -> {
                             int number = Integer.parseInt(parts[1]);
-                            taskList.deleteTask(number);
+                            return taskList.deleteTask(number);
                         }
                         case FIND -> {
                             if (parameters.isBlank()) {
                                 throw new PenguinBotException("Find task needs a keyword.");
                             }
-                            taskList.findTasks(parameters);
+                            return taskList.findTasks(parameters);
                         }
                         case TODO -> {
                             if (parameters.isBlank()) {
                                 throw new PenguinBotException("Todo needs a description.");
                             }
                             ToDo toDo = new ToDo(parameters);
-                            taskList.addTask(toDo);
+                            return taskList.addTask(toDo);
                         }
                         case DEADLINE -> {
                             String by = "";
@@ -110,7 +111,7 @@ public class Parser {
                             }
                             LocalDateTime byDateTime = parseUserDateTime(by, "deadline");
                             Deadline deadlineTask = new Deadline(description, byDateTime);
-                            taskList.addTask(deadlineTask);
+                            return taskList.addTask(deadlineTask);
                         }
                         case EVENT -> {
                             String startTime = "";
@@ -133,7 +134,7 @@ public class Parser {
                             LocalDateTime start = parseUserDateTime(startTime, "event start");
                             LocalDateTime end = parseUserDateTime(endTime, "event end");
                             Event eventTask = new Event(description, start, end);
-                            taskList.addTask(eventTask);
+                            return taskList.addTask(eventTask);
                         }
                     }
                 } catch (IllegalArgumentException e) {
@@ -141,10 +142,13 @@ public class Parser {
                 }
             }
         } catch (PenguinBotException e) {
-            ui.showLine();
-            ui.showPenguinBotExceptionMessage(e);
-            ui.showLine();
+//            ui.showLine();
+//            ui.showPenguinBotExceptionMessage(e);
+//            ui.showLine();
+            return e.getMessage();
         }
+
+        return "Unexpected error occurred";
     }
 
     /**

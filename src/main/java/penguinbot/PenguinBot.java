@@ -25,6 +25,8 @@ public class PenguinBot {
     /** User interface handler for input/output. */
     private final Ui ui;
 
+    private Parser parser;
+
     /**
      * Constructs the bot and initializes storage and task list from disk.
      *
@@ -43,6 +45,9 @@ public class PenguinBot {
             ui.showPenguinBotExceptionMessage(new PenguinBotException("File Not Found!"));
             tasks = new TaskList();
         }
+
+        parser = new Parser(tasks, storage, ui);
+
     }
 
     /**
@@ -60,11 +65,18 @@ public class PenguinBot {
     }
 
     /**
-     * Program entry point.
-     *
-     * @param args CLI arguments.
+     * Generates a response for the user's chat message.
      */
-    public static void main(String[] args) {
-        new PenguinBot("./src/data/TaskList.txt").run();
+    public String getResponse(String input) {
+        return parser.parseAndExecute(input);
     }
+
+//    /**
+//     * Program entry point.
+//     *
+//     * @param args CLI arguments.
+//     */
+//    public static void main(String[] args) {
+//        new PenguinBot("./src/data/TaskList.txt").run();
+//    }
 }

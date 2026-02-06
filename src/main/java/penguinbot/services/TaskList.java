@@ -43,15 +43,13 @@ public class TaskList {
      *
      * @param task task to add.
      */
-    public void addTask(Task task) {
+    public String addTask(Task task) {
         this.tasks.add(task);
-        System.out.println(
-                "    ____________________________________________________________\n"
-                + "     Got it. I've added this task:\n"
-                + "       " + task + "\n"
-                + "     Now you have " + tasks.size() + " tasks in the list.\n"
-                + "    ____________________________________________________________\n"
-        );
+        return
+                "Got it. I've added this task:\n"
+                + task + "\n"
+                + "Now you have " + tasks.size() + " tasks in the list."
+        ;
     }
 
     /**
@@ -59,33 +57,31 @@ public class TaskList {
      *
      * @param number 1-based index of task to remove.
      */
-    public void deleteTask(int number) {
+    public String deleteTask(int number) throws PenguinBotException {
         if (tasks.get(number - 1) != null) {
             Task task = tasks.get(number - 1);
             tasks.remove(number - 1);
-            System.out.println(
-                    "    ____________________________________________________________\n"
-                    + "     Noted. I've removed this task:\n"
-                    + "       " + task.toString() + "\n"
-                    + "     Now you have " + tasks.size() + " tasks in the list.\n"
-                    + "    ____________________________________________________________"
-            );
+            return
+                    "Noted. I've removed this task:\n"
+                            + task.toString() + "\n"
+                            + "Now you have " + tasks.size() + " tasks in the list."
+                    ;
         }
+        throw new PenguinBotException("Unable to delete task!");
     }
+
 
     /**
      * Marks a task as done by 1-based index.
      *
      * @param number 1-based index of task to mark.
      */
-    public void markTask(int number) {
+    public String markTask(int number) {
         tasks.get(number - 1).markAsDone();
-        System.out.println(
-                "    ____________________________________________________________\n"
-                + "     OK, I've marked this task as not done yet:\n"
-                + "       " + tasks.get(number - 1).toString() + "\n"
-                + "    ____________________________________________________________"
-        );
+        return
+                "OK, I've marked this task as not done yet:\n"
+                + tasks.get(number - 1).toString()
+        ;
     }
 
     /**
@@ -93,35 +89,29 @@ public class TaskList {
      *
      * @param number 1-based index of task to unmark.
      */
-    public void unmarkTask(int number) {
+    public String unmarkTask(int number) {
         tasks.get(number - 1).markAsUndone();
-        System.out.println(
-                "    ____________________________________________________________\n"
-                + "     Nice! I've marked this task as done:\n"
-                + "       " + tasks.get(number - 1).toString() + "\n"
-                + "    ____________________________________________________________"
-        );
+        return
+                "Nice! I've marked this task as done:\n"
+                + tasks.get(number - 1).toString()
+        ;
     }
 
     /**
      * Prints all tasks with indices to standard output.
      */
-    public void printTasks() {
+    public String printTasks() {
         StringBuilder output = new StringBuilder();
         int i = 1;
         while (i <= tasks.size() && tasks.get(i - 1) != null) {
-            output.append("     ")
+            output
                     .append(i)
                     .append(". ")
                     .append(tasks.get(i - 1).toString())
                     .append("\n");
             i++;
         }
-        System.out.println(
-                "    ____________________________________________________________\n"
-                + output + "\n"
-                + "    ____________________________________________________________\n"
-        );
+        return output.toString();
     }
 
     /**
@@ -134,16 +124,17 @@ public class TaskList {
         storage.storeTasks(tasks);
     }
 
-    public void findTasks(String keyword) {
-        System.out.println("    ____________________________________________________________");
-        System.out.println("     Here are the matching tasks in your list:");
+    public String findTasks(String keyword) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Here are the matching tasks in your list:");
         int count = 1;
         for (Task task : tasks) {
             if (task.toString().contains(keyword)) {
-                System.out.println("     " + count + "." + task.toString());
+                sb.append(count).append(". ").append(task.toString()).append("\n");
                 count++;
             }
         }
-        System.out.println("    ____________________________________________________________");
+
+        return sb.toString();
     }
 }
