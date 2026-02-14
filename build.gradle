@@ -48,7 +48,7 @@ application {
 
 shadowJar {
     archiveBaseName = "penguinBot"
-    archiveClassifier = "v0.1"
+    archiveClassifier = "v0.2"
 }
 
 run{
