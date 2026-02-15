@@ -23,7 +23,6 @@ public class PenguinBot {
      */
     public PenguinBot(String filePathString) {
         Storage storage = new Storage(filePathString);
-
         TaskList tasks;
 
         try {
