@@ -54,10 +54,12 @@ public class MainWindow extends AnchorPane {
     private void handleUserInput() {
         String userText = userInput.getText();
         String penguinBotText = penguinBot.getResponse(userInput.getText());
+
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(userText, userImage),
                 DialogBox.getPenguinBotDialog(penguinBotText, penguinBotImage)
         );
+
         userInput.clear();
     }
 }

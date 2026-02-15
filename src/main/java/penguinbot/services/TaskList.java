@@ -12,7 +12,7 @@ import java.util.Objects;
  */
 public class TaskList {
     /** Internal task collection. */
-    private List<Task> tasks;
+    private final List<Task> tasks;
 
     /**
      * Creates a task list seeded with existing tasks.
@@ -48,6 +48,7 @@ public class TaskList {
         int taskListSize = tasks.size();
         this.tasks.add(task);
         assert tasks.size() == taskListSize + 1;
+
         return
                 "Got it. I've added this task:\n"
                 + task + "\n"
@@ -66,12 +67,14 @@ public class TaskList {
             int taskListSize = tasks.size();
             tasks.remove(number - 1);
             assert tasks.size() == taskListSize + 1;
+
             return
                     "Noted. I've removed this task:\n"
                             + task.toString() + "\n"
                             + "Now you have " + tasks.size() + " tasks in the list."
                     ;
         }
+
         throw new PenguinBotException("Unable to delete task!");
     }
 
@@ -82,9 +85,12 @@ public class TaskList {
      * @param number 1-based index of task to mark.
      */
     public String markTask(int number) {
-        tasks.get(number - 1).markAsDone();
-        String taskStatusIcon = tasks.get(number - 1).getStatusIcon();
+        Task task = tasks.get(number - 1);
+        task.markAsDone();
+
+        String taskStatusIcon = task.getStatusIcon();
         assert Objects.equals(taskStatusIcon, "1");
+
         return
                 "OK, I've marked this task as not done yet:\n"
                 + tasks.get(number - 1).toString()
@@ -97,12 +103,14 @@ public class TaskList {
      * @param number 1-based index of task to unmark.
      */
     public String unmarkTask(int number) {
-        tasks.get(number - 1).markAsUndone();
+        Task task = tasks.get(number - 1);
+        task.markAsUndone();
+
         String taskStatusIcon = tasks.get(number - 1).getStatusIcon();
         assert Objects.equals(taskStatusIcon, "0");
+
         return
-                "Nice! I've marked this task as done:\n"
-                + tasks.get(number - 1).toString()
+                "Nice! I've marked this task as undone:\n" + task
         ;
     }
 
@@ -112,6 +120,7 @@ public class TaskList {
     public String printTasks() {
         StringBuilder output = new StringBuilder();
         int i = 1;
+
         while (i <= tasks.size() && tasks.get(i - 1) != null) {
             output
                     .append(i)
@@ -139,7 +148,11 @@ public class TaskList {
         int count = 1;
         for (Task task : tasks) {
             if (task.toString().contains(keyword)) {
-                sb.append(count).append(". ").append(task.toString()).append("\n");
+                sb
+                        .append(count)
+                        .append(". ")
+                        .append(task)
+                        .append("\n");
                 count++;
             }
         }

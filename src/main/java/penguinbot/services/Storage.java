@@ -204,16 +204,16 @@ public class Storage {
     /**
      * Parses a stored date-time string into {@link LocalDateTime}.
      *
-     * @param raw serialized date-time.
+     * @param rawDateTime serialized date-time.
      * @return parsed {@link LocalDateTime}.
      * @throws PenguinBotException when the value cannot be parsed.
      */
-    private static LocalDateTime parseStoredDateTime(String raw)
+    private static LocalDateTime parseStoredDateTime(String rawDateTime)
             throws PenguinBotException {
         try {
-            return LocalDateTime.parse(raw.trim(), STORAGE_DATE_TIME);
+            return LocalDateTime.parse(rawDateTime.trim(), STORAGE_DATE_TIME);
         } catch (DateTimeParseException e) {
-            throw new PenguinBotException("Invalid stored date-time: " + raw);
+            throw new PenguinBotException("Invalid stored date-time: " + rawDateTime);
         }
     }
 }

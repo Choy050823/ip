@@ -2,10 +2,7 @@ package penguinbot.services;
 
 import penguinbot.exceptions.PenguinBotException;
 
-import penguinbot.models.Actions;
-import penguinbot.models.Deadline;
-import penguinbot.models.Event;
-import penguinbot.models.ToDo;
+import penguinbot.models.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -14,141 +11,142 @@ import java.time.format.DateTimeParseException;
  * Interprets user commands and dispatches task operations.
  */
 public class Parser {
+
     /** Task list being manipulated. */
-    private TaskList taskList;
+    private final TaskList tasks;
 
     /** Storage handler for persistence on exit. */
-    private Storage storage;
-
-    /** UI for user interaction. */
-    private Ui ui;
-    /**  Flag indicating whether the session should terminate. */
-    private boolean isExit;
+    private final Storage storage;
 
     /**
      * Creates a parser with dependencies injected.
      *
-     * @param taskList   task list to modify.
+     * @param tasks   task list to modify.
      * @param storage storage for persistence.
-     * @param ui      user interface helper.
      */
-    public Parser(TaskList taskList, Storage storage, Ui ui) {
-        this.taskList = taskList;
+    public Parser(TaskList tasks, Storage storage) {
+        this.tasks = tasks;
         this.storage = storage;
-        this.ui = ui;
-        this.isExit = false;
     }
 
     /**
-     * Returns true if the user requested exit.
-     *
-     * @return exit flag.
-     */
-    public boolean isExit() {
-        return this.isExit;
-    }
-
-    /**
-     * Parses a user command and executes the corresponding action,
-     * printing any user-facing errors.
+     * Parses a user command into a command
      *
      * @param userInput raw input string.
      */
-    public String parseAndExecute(String userInput) {
+    public Command parseCommand(String userInput) throws PenguinBotException {
         try {
-            if (userInput.equals("bye")) {
-                // Write the list into the file
-                taskList.storeTasksToStorage(storage);
-                this.isExit = true;
-                return "Saved tasks! Exiting...";
+            String[] parts = userInput.split("\\s+");
+            String action = parts[0];
+            String parameters = userInput.substring(action.length()).trim();
+            Actions parsedAction = Actions.valueOf(action.toUpperCase());
 
-            } else if (userInput.equals("list")) {
-                return taskList.printTasks();
-            } else {
-                String[] parts = userInput.split("\\s+");
-                String action = parts[0];
-
-                final String parameters = userInput.substring(action.length()).trim();
-                try {
-                    Actions parsedAction = Actions.valueOf(action.toUpperCase());
-                    switch (parsedAction) {
-                        case MARK -> {
-                            int number = Integer.parseInt(parts[1]);
-                            return taskList.markTask(number);
-                        }
-                        case UNMARK -> {
-                            int number = Integer.parseInt(parts[1]);
-                            return taskList.unmarkTask(number);
-                        }
-                        case DELETE -> {
-                            int number = Integer.parseInt(parts[1]);
-                            return taskList.deleteTask(number);
-                        }
-                        case FIND -> {
-                            if (parameters.isBlank()) {
-                                throw new PenguinBotException("Find task needs a keyword.");
-                            }
-                            return taskList.findTasks(parameters);
-                        }
-                        case TODO -> {
-                            if (parameters.isBlank()) {
-                                throw new PenguinBotException("Todo needs a description.");
-                            }
-                            ToDo toDo = new ToDo(parameters);
-                            return taskList.addTask(toDo);
-                        }
-                        case DEADLINE -> {
-                            String by = "";
-                            String[] bySplit = parameters.split("/by", 2);
-                            String description = bySplit[0].trim();
-                            if (bySplit.length > 1) {
-                                by = bySplit[1].trim();
-                            }
-                            if (description.isEmpty() || by.isEmpty()) {
-                                throw new PenguinBotException(
-                                        "Deadline needs description and ISO date-time (e.g. 2024-02-01T13:30)."
-                                );
-                            }
-                            LocalDateTime byDateTime = parseUserDateTime(by, "deadline");
-                            Deadline deadlineTask = new Deadline(description, byDateTime);
-                            return taskList.addTask(deadlineTask);
-                        }
-                        case EVENT -> {
-                            String startTime = "";
-                            String endTime = "";
-                            String[] fromSplit = parameters.split("/from", 2);
-                            String description = fromSplit[0].trim();
-                            if (fromSplit.length > 1) {
-                                String[] toSplit = fromSplit[1].split("/to", 2);
-                                startTime = toSplit[0].trim();
-                                if (toSplit.length > 1) {
-                                    endTime = toSplit[1].trim();
-                                }
-                            }
-                            if (description.isEmpty() || startTime.isEmpty() || endTime.isEmpty()) {
-                                throw new PenguinBotException(
-                                        "Event needs description, start, and end "
-                                                + "in ISO date-time (e.g. 2024-02-01T13:30)."
-                                );
-                            }
-                            LocalDateTime start = parseUserDateTime(startTime, "event start");
-                            LocalDateTime end = parseUserDateTime(endTime, "event end");
-                            Event eventTask = new Event(description, start, end);
-                            return taskList.addTask(eventTask);
-                        }
-                    }
-                } catch (IllegalArgumentException e) {
-                    throw new PenguinBotException("Unknown command: " + action);
-                }
+            switch (parsedAction) {
+            case BYE -> {
+                return new ExitCommand(Actions.BYE, tasks, storage);
             }
-        } catch (PenguinBotException e) {
-//            ui.showLine();
-//            ui.showPenguinBotExceptionMessage(e);
-//            ui.showLine();
-            return e.getMessage();
-        }
 
-        return "Unexpected error occurred";
+            case LIST -> {
+                return new ListCommand(Actions.LIST, tasks);
+            }
+
+            case MARK -> {
+                String taskIndexString = parts[1];
+                return new MarkCommand(Actions.MARK, tasks, taskIndexString);
+            }
+
+            case UNMARK -> {
+                String taskIndexString = parts[1];
+                return new UnmarkCommand(Actions.MARK, tasks, taskIndexString);
+            }
+
+            case DELETE -> {
+                String taskIndexString = parts[1];
+                return new DeleteCommand(Actions.DELETE, tasks, taskIndexString);
+            }
+
+            case FIND -> {
+                if (parameters.isBlank()) {
+                    throw new PenguinBotException("Find task needs a keyword.");
+                }
+
+                return new FindCommand(Actions.FIND, tasks);
+            }
+
+            case TODO -> {
+                if (parameters.isBlank()) {
+                    throw new PenguinBotException("Todo needs a description.");
+                }
+
+                return new ToDoCommand(Actions.TODO, tasks, parameters);
+            }
+
+            case DEADLINE -> {
+                String deadlineRawString = "";
+                String[] deadlineRawStringSplit = parameters.split("/by", 2);
+                String taskDescription = deadlineRawStringSplit[0].trim();
+
+                if (deadlineRawStringSplit.length > 1) {
+                    deadlineRawString = deadlineRawStringSplit[1].trim();
+                }
+
+                if (taskDescription.isEmpty() || deadlineRawString.isEmpty()) {
+                    throw new PenguinBotException(
+                            "Deadline needs taskDescription and"
+                                    + " ISO date-time (e.g. 2024-02-01T13:30)."
+                    );
+                }
+
+                return new DeadlineCommand(
+                        Actions.DEADLINE,
+                        tasks,
+                        taskDescription,
+                        deadlineRawString
+                );
+            }
+            case EVENT -> {
+                String startDateTimeRawString = "";
+                String endDateTimeRawString = "";
+                String[] fromSplit = parameters.split("/from", 2);
+                String taskDescription = fromSplit[0].trim();
+
+                if (fromSplit.length > 1) {
+                    String[] toSplit = fromSplit[1].split("/to", 2);
+                    startDateTimeRawString = toSplit[0].trim();
+
+                    if (toSplit.length > 1) {
+                        endDateTimeRawString = toSplit[1].trim();
+                    }
+                }
+
+                if (taskDescription.isEmpty()
+                        || startDateTimeRawString.isEmpty()
+                        || endDateTimeRawString.isEmpty()) {
+
+                    throw new PenguinBotException(
+                            "Event needs taskDescription, start, and end "
+                                    + "in ISO date-time (e.g. 2024-02-01T13:30)."
+                    );
+                }
+
+                return new EventCommand(
+                        Actions.EVENT,
+                        tasks,
+                        taskDescription,
+                        startDateTimeRawString,
+                        endDateTimeRawString
+                );
+            }
+
+            default -> throw new PenguinBotException("Unknown command: " + action);
+            }
+
+        } catch (IllegalArgumentException e) {
+            throw new PenguinBotException("Unknown Command");
+
+        } catch (RuntimeException e) {
+            throw new PenguinBotException(e.getMessage());
+        }
     }
 
     /**
@@ -159,7 +157,7 @@ public class Parser {
      * @return parsed {@link LocalDateTime}.
      * @throws PenguinBotException when parsing fails or input is blank.
      */
-    private static LocalDateTime parseUserDateTime(
+    public static LocalDateTime parseUserDateTime(
             String raw, String label) throws PenguinBotException {
         if (raw == null || raw.isBlank()) {
             throw new PenguinBotException("Missing " + label + " date-time (use ISO e.g. 2024-02-01T13:30).");
