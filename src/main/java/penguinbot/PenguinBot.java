@@ -2,10 +2,10 @@ package penguinbot;
 
 import penguinbot.exceptions.PenguinBotException;
 
+import penguinbot.models.Command;
 import penguinbot.services.Parser;
 import penguinbot.services.Storage;
 import penguinbot.services.TaskList;
-import penguinbot.services.Ui;
 
 import java.io.FileNotFoundException;
 
@@ -14,18 +14,7 @@ import java.io.FileNotFoundException;
  */
 public class PenguinBot {
 
-    /** Handles persistence of tasks. */
-    private final Storage storage;
-
-    /**
-     * Current in-memory task list.
-     */
-    private TaskList tasks;
-
-    /** User interface handler for input/output. */
-    private final Ui ui;
-
-    private Parser parser;
+    private final Parser parser;
 
     /**
      * Constructs the bot and initializes storage and task list from disk.
@@ -33,50 +22,35 @@ public class PenguinBot {
      * @param filePathString path to the task storage file.
      */
     public PenguinBot(String filePathString) {
-        ui = new Ui();
-        storage = new Storage(filePathString);
+        Storage storage = new Storage(filePathString);
+
+        TaskList tasks;
 
         try {
             tasks = new TaskList(storage.loadTasks());
+
         } catch (PenguinBotException e) {
-            ui.showPenguinBotExceptionMessage(e);
+            System.out.println(e.getMessage());
             tasks = new TaskList();
+
         } catch (FileNotFoundException e) {
-            ui.showPenguinBotExceptionMessage(new PenguinBotException("File Not Found!"));
+            System.out.println("File Not Found!");
             tasks = new TaskList();
         }
 
-        parser = new Parser(tasks, storage, ui);
-
-    }
-
-    /**
-     * Starts the interactive command loop.
-     */
-    public void run() {
-        ui.showWelcome();
-
-        Parser parser = new Parser(tasks, storage, ui);
-
-        while (!parser.isExit()) {
-            String userInput = ui.readCommand();
-            parser.parseAndExecute(userInput);
-        }
+        this.parser = new Parser(tasks, storage);
     }
 
     /**
      * Generates a response for the user's chat message.
      */
     public String getResponse(String input) {
-        return parser.parseAndExecute(input);
-    }
+        try {
+            Command command = parser.parseCommand(input);
 
-//    /**
-//     * Program entry point.
-//     *
-//     * @param args CLI arguments.
-//     */
-//    public static void main(String[] args) {
-//        new PenguinBot("./src/data/TaskList.txt").run();
-//    }
+            return command.execute();
+        } catch (PenguinBotException e) {
+            return "Error: " + e.getMessage();
+        }
+    }
 }

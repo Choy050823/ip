@@ -13,6 +13,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class Main extends Application {
     private ScrollPane scrollPane;
@@ -21,9 +22,19 @@ public class Main extends Application {
     private Button sendButton;
     private Scene scene;
 
-    private Image userImage = new Image(this.getClass().getResourceAsStream("/images/DaUser.png"));
-    private Image penguinBotImage = new Image(this.getClass().getResourceAsStream("/images/DaPenguinBot.png"));
-    private PenguinBot penguinBot = new PenguinBot("./src/data/TaskList.txt");
+    private final Image userImage = new Image(
+            Objects.requireNonNull(
+                    this.getClass().getResourceAsStream("/images/DaUser.png")
+            )
+    );
+
+    private final Image penguinBotImage = new Image(
+            Objects.requireNonNull(
+                    this.getClass().getResourceAsStream("/images/DaPenguinBot.png")
+            )
+    );
+
+    private final PenguinBot penguinBot = new PenguinBot("./src/data/TaskList.txt");
 
     @Override
     public void start(Stage stage) {

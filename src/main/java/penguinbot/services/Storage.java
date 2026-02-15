@@ -140,7 +140,7 @@ public class Storage {
     /**
      * Persists all tasks to the storage file, replacing any existing content.
      *
-     * @param list tasks to persist.
+     * @param tasks tasks to persist.
      * @throws PenguinBotException when writing fails.
      */
     public void storeTasks(List<Task> tasks) throws PenguinBotException {
@@ -189,7 +189,6 @@ public class Storage {
      * Extracts a date segment prefixed by the given label.
      *
      * @param parts   tokenized task line.
-     * @param prefix  expected prefix (e.g., "by:" or "from:").
      * @return the trimmed date-time segment.
      * @throws PenguinBotException when the prefix is missing.
      */
@@ -205,16 +204,16 @@ public class Storage {
     /**
      * Parses a stored date-time string into {@link LocalDateTime}.
      *
-     * @param raw serialized date-time.
+     * @param rawDateTime serialized date-time.
      * @return parsed {@link LocalDateTime}.
      * @throws PenguinBotException when the value cannot be parsed.
      */
-    private static LocalDateTime parseStoredDateTime(String raw)
+    private static LocalDateTime parseStoredDateTime(String rawDateTime)
             throws PenguinBotException {
         try {
-            return LocalDateTime.parse(raw.trim(), STORAGE_DATE_TIME);
+            return LocalDateTime.parse(rawDateTime.trim(), STORAGE_DATE_TIME);
         } catch (DateTimeParseException e) {
-            throw new PenguinBotException("Invalid stored date-time: " + raw);
+            throw new PenguinBotException("Invalid stored date-time: " + rawDateTime);
         }
     }
 }

@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class TaskList {
     /** Internal task collection. */
-    private List<Task> tasks;
+    private final List<Task> tasks;
 
     /**
      * Creates a task list seeded with existing tasks.
@@ -45,6 +45,7 @@ public class TaskList {
      */
     public String addTask(Task task) {
         this.tasks.add(task);
+
         return
                 "Got it. I've added this task:\n"
                 + task + "\n"
@@ -61,12 +62,14 @@ public class TaskList {
         if (tasks.get(number - 1) != null) {
             Task task = tasks.get(number - 1);
             tasks.remove(number - 1);
+
             return
                     "Noted. I've removed this task:\n"
                             + task.toString() + "\n"
                             + "Now you have " + tasks.size() + " tasks in the list."
                     ;
         }
+
         throw new PenguinBotException("Unable to delete task!");
     }
 
@@ -77,11 +80,10 @@ public class TaskList {
      * @param number 1-based index of task to mark.
      */
     public String markTask(int number) {
-        tasks.get(number - 1).markAsDone();
-        return
-                "OK, I've marked this task as not done yet:\n"
-                + tasks.get(number - 1).toString()
-        ;
+        Task task = tasks.get(number - 1);
+        task.markAsDone();
+
+        return "OK, I've marked this task as done:\n" + task;
     }
 
     /**
@@ -90,10 +92,11 @@ public class TaskList {
      * @param number 1-based index of task to unmark.
      */
     public String unmarkTask(int number) {
-        tasks.get(number - 1).markAsUndone();
+        Task task = tasks.get(number - 1);
+        task.markAsUndone();
+
         return
-                "Nice! I've marked this task as done:\n"
-                + tasks.get(number - 1).toString()
+                "Nice! I've marked this task as undone:\n" + task
         ;
     }
 
@@ -103,6 +106,7 @@ public class TaskList {
     public String printTasks() {
         StringBuilder output = new StringBuilder();
         int i = 1;
+
         while (i <= tasks.size() && tasks.get(i - 1) != null) {
             output
                     .append(i)
@@ -130,7 +134,11 @@ public class TaskList {
         int count = 1;
         for (Task task : tasks) {
             if (task.toString().contains(keyword)) {
-                sb.append(count).append(". ").append(task.toString()).append("\n");
+                sb
+                        .append(count)
+                        .append(". ")
+                        .append(task)
+                        .append("\n");
                 count++;
             }
         }
