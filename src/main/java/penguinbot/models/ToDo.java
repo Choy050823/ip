@@ -1,5 +1,7 @@
 package penguinbot.models;
 
+import java.util.Objects;
+
 public class ToDo extends Task {
 
     public ToDo(String description) {

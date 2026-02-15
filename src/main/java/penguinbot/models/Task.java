@@ -1,6 +1,6 @@
 package penguinbot.models;
 
-public class Task {
+public abstract class Task {
     protected String description;
     protected boolean isDone;
 
@@ -21,9 +21,7 @@ public class Task {
         this.isDone = false;
     }
 
-    public String getTaskType() {
-        return " ";
-    }
+    public abstract String getTaskType();
 
     @Override
     public String toString() {
