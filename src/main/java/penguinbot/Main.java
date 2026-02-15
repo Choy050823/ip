@@ -54,13 +54,13 @@ public class Main extends Application {
      * Creates a dialog box containing user input, and appends it to
      * the dialog container. Clears the user input after processing.
      */
-    private void handleUserInput() {
-        String userText = userInput.getText();
-        String penguinBotText = penguinBot.getResponse(userInput.getText());
-        dialogContainer.getChildren().addAll(
-                DialogBox.getUserDialog(userText, userImage),
-                DialogBox.getPenguinBotDialog(penguinBotText, penguinBotImage)
-        );
-        userInput.clear();
-    }
+//    private void handleUserInput() {
+//        String userText = userInput.getText();
+//        String penguinBotText = penguinBot.getResponse(userInput.getText());
+//        dialogContainer.getChildren().addAll(
+//                DialogBox.getUserDialog(userText, userImage),
+//                DialogBox.getPenguinBotDialog(penguinBotText, penguinBotImage)
+//        );
+//        userInput.clear();
+//    }
 }

@@ -82,47 +82,47 @@ public class Storage {
                     boolean isDone = parseDone(parts);
                     String type = parts[0].trim();
                     switch (type) {
-                        case "T" -> {
-                            String description = extractDescription(parts);
-                            Task todoTask = new ToDo(description);
-                            if (isDone) {
-                                todoTask.markAsDone();
-                            }
-                            tasks.add(todoTask);
+                    case "T" -> {
+                        String description = extractDescription(parts);
+                        Task todoTask = new ToDo(description);
+                        if (isDone) {
+                            todoTask.markAsDone();
                         }
-                        case "D" -> {
-                            String description = extractDescription(parts);
-                            String byRaw = extractDateSegment(parts);
-                            LocalDateTime by = parseStoredDateTime(byRaw);
-                            Task deadlineTask = new Deadline(description, by);
-                            if (isDone) {
-                                deadlineTask.markAsDone();
-                            }
-                            tasks.add(deadlineTask);
+                        tasks.add(todoTask);
+                    }
+                    case "D" -> {
+                        String description = extractDescription(parts);
+                        String byRaw = extractDateSegment(parts);
+                        LocalDateTime by = parseStoredDateTime(byRaw);
+                        Task deadlineTask = new Deadline(description, by);
+                        if (isDone) {
+                            deadlineTask.markAsDone();
                         }
-                        case "E" -> {
-                            String description = extractDescription(parts);
-                            String timeSegment = parts.length >= 4 ? parts[3] : "";
-                            if (!timeSegment.toLowerCase().startsWith("from:")) {
-                                throw new PenguinBotException("Missing from: segment");
-                            }
-                            Pattern pattern = Pattern.compile(
-                                    "from:\\s*(.*?)\\s*to:\\s*(.*)",
-                                    Pattern.CASE_INSENSITIVE
-                            );
-                            Matcher matcher = pattern.matcher(timeSegment.trim());
-                            if (!matcher.matches()) {
-                                throw new PenguinBotException("Corrupted event line");
-                            }
-                            LocalDateTime start = parseStoredDateTime(matcher.group(1));
-                            LocalDateTime end = parseStoredDateTime(matcher.group(2));
-                            Task eventTask = new Event(description, start, end);
-                            if (isDone) {
-                                eventTask.markAsDone();
-                            }
-                            tasks.add(eventTask);
+                        tasks.add(deadlineTask);
+                    }
+                    case "E" -> {
+                        String description = extractDescription(parts);
+                        String timeSegment = parts.length >= 4 ? parts[3] : "";
+                        if (!timeSegment.toLowerCase().startsWith("from:")) {
+                            throw new PenguinBotException("Missing from: segment");
                         }
-                        default -> System.out.println("Not a valid task");
+                        Pattern pattern = Pattern.compile(
+                                "from:\\s*(.*?)\\s*to:\\s*(.*)",
+                                Pattern.CASE_INSENSITIVE
+                        );
+                        Matcher matcher = pattern.matcher(timeSegment.trim());
+                        if (!matcher.matches()) {
+                            throw new PenguinBotException("Corrupted event line");
+                        }
+                        LocalDateTime start = parseStoredDateTime(matcher.group(1));
+                        LocalDateTime end = parseStoredDateTime(matcher.group(2));
+                        Task eventTask = new Event(description, start, end);
+                        if (isDone) {
+                            eventTask.markAsDone();
+                        }
+                        tasks.add(eventTask);
+                    }
+                    default -> System.out.println("Not a valid task");
                     }
                 } catch (PenguinBotException e) {
                     System.out.println(

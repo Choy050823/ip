@@ -5,6 +5,7 @@ import penguinbot.models.Task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Maintains an in-memory list of tasks and provides task operations.
@@ -44,7 +45,9 @@ public class TaskList {
      * @param task task to add.
      */
     public String addTask(Task task) {
+        int taskListSize = tasks.size();
         this.tasks.add(task);
+        assert tasks.size() == taskListSize + 1;
 
         return
                 "Got it. I've added this task:\n"
@@ -61,7 +64,9 @@ public class TaskList {
     public String deleteTask(int number) throws PenguinBotException {
         if (tasks.get(number - 1) != null) {
             Task task = tasks.get(number - 1);
+            int taskListSize = tasks.size();
             tasks.remove(number - 1);
+            assert tasks.size() == taskListSize + 1;
 
             return
                     "Noted. I've removed this task:\n"
@@ -83,7 +88,13 @@ public class TaskList {
         Task task = tasks.get(number - 1);
         task.markAsDone();
 
-        return "OK, I've marked this task as done:\n" + task;
+        String taskStatusIcon = task.getStatusIcon();
+        assert Objects.equals(taskStatusIcon, "1");
+
+        return
+                "OK, I've marked this task as not done yet:\n"
+                + tasks.get(number - 1).toString()
+        ;
     }
 
     /**
@@ -94,6 +105,9 @@ public class TaskList {
     public String unmarkTask(int number) {
         Task task = tasks.get(number - 1);
         task.markAsUndone();
+
+        String taskStatusIcon = tasks.get(number - 1).getStatusIcon();
+        assert Objects.equals(taskStatusIcon, "0");
 
         return
                 "Nice! I've marked this task as undone:\n" + task
