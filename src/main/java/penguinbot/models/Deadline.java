@@ -1,6 +1,7 @@
 package penguinbot.models;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class Deadline extends Task {
     protected LocalDateTime deadline;

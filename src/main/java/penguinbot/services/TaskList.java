@@ -45,6 +45,10 @@ public class TaskList {
      * @param task task to add.
      */
     public String addTask(Task task) {
+        if (isDuplicateTask(task)) {
+            return "It is a duplicate task, aborting...";
+        }
+
         int taskListSize = tasks.size();
         this.tasks.add(task);
         assert tasks.size() == taskListSize + 1;
@@ -54,6 +58,26 @@ public class TaskList {
                 + task + "\n"
                 + "Now you have " + tasks.size() + " tasks in the list."
         ;
+    }
+
+    private boolean isDuplicateTask(Task newTask) {
+        List<Boolean> wasDone = tasks.stream()
+                .map(task -> "1".equals(task.getStatusIcon()))
+                .toList();
+
+        tasks.forEach(Task::markAsUndone);
+
+        boolean isDuplicate = tasks
+                .stream()
+                .anyMatch(task -> Objects.equals(task.toString(), newTask.toString()));
+
+        for (int i =0; i < tasks.size(); i++) {
+            if (wasDone.get(i)) {
+                tasks.get(i).markAsDone();
+            }
+        }
+
+        return isDuplicate;
     }
 
     /**
