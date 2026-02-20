@@ -1,24 +1,55 @@
-## PenguinBot project template
+# PenguinBot (JavaFX)
 
-This is a project template for a greenfield Java project. It's named after the Java mascot _Duke_. Given below are instructions on how to use it.
+A desktop chatbot built with Java 17 and JavaFX. Includes GUI-style task management (todo, deadline, event).
 
-## Setting up in Intellij
+## Prerequisites
+- Java 17 (JDK). Confirm with `java -version`.
+- Git (optional, for cloning).
+- Internet access for the first Gradle wrapper run (downloads dependencies).
 
-Prerequisites: JDK 17, update Intellij to the most recent version.
+## Project layout
+- `src/main/java/penguinbot/` — app source (GUI: `Main`, `MainWindow`, `DialogBox`; logic: commands, parser, storage).
+- `src/main/resources/view/` — FXML layouts and styles (`MainWindow.fxml`, `DialogBox.fxml`, `theme.css`).
+- `src/data/TaskList.txt` — default save file (created/updated at runtime).
+- `text-ui-test/` — simple text-mode regression harness.
 
-1. Open Intellij (if you are not in the welcome screen, click `File` > `Close Project` to close the existing project first)
-1. Open the project into Intellij as follows:
-   1. Click `Open`.
-   1. Select the project directory, and click `OK`.
-   1. If there are any further prompts, accept the defaults.
-1. Configure the project to use **JDK 17** (not other versions) as explained in [here](https://www.jetbrains.com/help/idea/sdk.html#set-up-jdk).<br>
-   In the same dialog, set the **Project language level** field to the `SDK default` option.
-1. After that, locate the `src/main/java/penguinbot.PenguinBot.java` file, right-click it, and choose `Run penguinbot.PenguinBot.main()` (if the code editor is showing compile errors, try restarting the IDE). If the setup is correct, you should see something like the below as the output:
-   ```
-   ____________________________________________________________
-    Hello! I'm PenguinBot
-    What can I do for you?
-   ____________________________________________________________
-   ```
+## Running the app (GUI)
+Use the Gradle wrapper; no manual JavaFX setup required.
 
-**Warning:** Keep the `src\main\java` folder as the root folder for Java files (i.e., don't rename those folders or move Java files to another folder outside of this folder path), as this is the default location some tools (e.g., Gradle) expect to find Java files.
+```powershell
+# From the project root
+./gradlew run
+```
+
+Gradle will compile, download JavaFX, and launch the PenguinBot window. If JavaFX fails to load, re-check that you are on JDK 17 and rerun the command.
+
+## Running tests
+```powershell
+./gradlew test
+```
+
+## Packaging a runnable jar
+Creates `build/libs/penguinBot-v0.2.jar` with bundled JavaFX dependencies.
+```powershell
+./gradlew shadowJar
+java -jar build/libs/penguinBot-v0.2.jar
+```
+
+## Using the bot (commands)
+Type these in the GUI input box:
+- `list`
+- `todo <description>`
+- `deadline <description> /by <yyyy-mm-ddThh:mm>`
+- `event <description> /from <yyyy-mm-ddThh:mm> /to <yyyy-mm-ddThh:mm>`
+- `mark <index>` / `unmark <index>`
+- `delete <index>`
+- `find <keyword>`
+- `bye` to exit
+
+## Storage
+Tasks persist in `src/data/TaskList.txt`. If the file contains malformed lines, the app will skip them and continue. Delete the file to start fresh.
+
+## Troubleshooting
+- **ClassCastException / FXML load errors:** ensure `MainWindow.fxml` is unchanged and the app is launched via `./gradlew run`.
+- **Java version issues:** make sure `JAVA_HOME` points to JDK 17. Reopen terminal after changing it.
+- **Fresh dependencies:** run `./gradlew clean` followed by `./gradlew run` if you see stale-class errors.

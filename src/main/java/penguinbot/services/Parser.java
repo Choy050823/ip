@@ -70,7 +70,7 @@ public class Parser {
                     throw new PenguinBotException("Find task needs a keyword.");
                 }
 
-                return new FindCommand(Actions.FIND, tasks);
+                return new FindCommand(Actions.FIND, tasks, parameters);
             }
 
             case TODO -> {

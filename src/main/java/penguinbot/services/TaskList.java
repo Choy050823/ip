@@ -168,7 +168,7 @@ public class TaskList {
 
     public String findTasks(String keyword) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Here are the matching tasks in your list:");
+        sb.append("Here are the matching tasks in your list:\n");
         int count = 1;
         for (Task task : tasks) {
             if (task.toString().contains(keyword)) {
