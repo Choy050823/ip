@@ -5,6 +5,7 @@ A desktop chatbot built with Java 17 and JavaFX. Includes GUI-style task managem
 ## Prerequisites
 - Java 17 (JDK). Confirm with `java -version`.
 - Git (optional, for cloning).
+- Enable Gradle Plugin in IDE and setup for Gradle (make sure ./gradlew is executable in the terminal)
 - Internet access for the first Gradle wrapper run (downloads dependencies).
 
 ## Project layout
@@ -31,7 +32,7 @@ Gradle will compile, download JavaFX, and launch the PenguinBot window. If JavaF
 ## Packaging a runnable jar
 Creates `build/libs/penguinBot-v0.2.jar` with bundled JavaFX dependencies.
 ```powershell
-./gradlew shadowJar
+./gradlew clean shadowJar
 java -jar build/libs/penguinBot-v0.2.jar
 ```
 
