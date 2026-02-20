@@ -1,30 +1,55 @@
-# penguinbot.PenguinBot User Guide
+# PenguinBot (JavaFX)
 
-// Update the title above to match the actual product name
+A desktop chatbot built with Java 17 and JavaFX. Includes GUI-style task management (todo, deadline, event).
 
-// Product screenshot goes here
+## Prerequisites
+- Java 17 (JDK). Confirm with `java -version`.
+- Git (optional, for cloning).
+- Internet access for the first Gradle wrapper run (downloads dependencies).
 
-// Product intro goes here
+## Project layout
+- `src/main/java/penguinbot/` — app source (GUI: `Main`, `MainWindow`, `DialogBox`; logic: commands, parser, storage).
+- `src/main/resources/view/` — FXML layouts and styles (`MainWindow.fxml`, `DialogBox.fxml`, `theme.css`).
+- `src/data/TaskList.txt` — default save file (created/updated at runtime).
+- `text-ui-test/` — simple text-mode regression harness.
 
-## Adding deadlines
+## Running the app (GUI)
+Use the Gradle wrapper; no manual JavaFX setup required.
 
-// Describe the action and its outcome.
-
-// Give examples of usage
-
-Example: `keyword (optional arguments)`
-
-// A description of the expected outcome goes here
-
+```powershell
+# From the project root
+./gradlew run
 ```
-expected output
+
+Gradle will compile, download JavaFX, and launch the PenguinBot window. If JavaFX fails to load, re-check that you are on JDK 17 and rerun the command.
+
+## Running tests
+```powershell
+./gradlew test
 ```
 
-## Feature ABC
+## Packaging a runnable jar
+Creates `build/libs/penguinBot-v0.2.jar` with bundled JavaFX dependencies.
+```powershell
+./gradlew shadowJar
+java -jar build/libs/penguinBot-v0.2.jar
+```
 
-// Feature details
+## Using the bot (commands)
+Type these in the GUI input box:
+- `list`
+- `todo <description>`
+- `deadline <description> /by <yyyy-mm-ddThh:mm>`
+- `event <description> /from <yyyy-mm-ddThh:mm> /to <yyyy-mm-ddThh:mm>`
+- `mark <index>` / `unmark <index>`
+- `delete <index>`
+- `find <keyword>`
+- `bye` to exit
 
+## Storage
+Tasks persist in `src/data/TaskList.txt`. If the file contains malformed lines, the app will skip them and continue. Delete the file to start fresh.
 
-## Feature XYZ
-
-// Feature details
+## Troubleshooting
+- **ClassCastException / FXML load errors:** ensure `MainWindow.fxml` is unchanged and the app is launched via `./gradlew run`.
+- **Java version issues:** make sure `JAVA_HOME` points to JDK 17. Reopen terminal after changing it.
+- **Fresh dependencies:** run `./gradlew clean` followed by `./gradlew run` if you see stale-class errors.
