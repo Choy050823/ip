@@ -1,0 +1,59 @@
+:root {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-base: #f7f9fc;
+}
+
+.chat-root {
+    -fx-background-color: linear-gradient(to bottom, #f7f9fc, #eef1f7);
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+#dialogContainer {
+    -fx-spacing: 10;
+}
+
+.dialog-box {
+    -fx-alignment: top-right;
+}
+
+.dialog-avatar {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 8, 0.2, 0, 2);
+    -fx-background-radius: 32;
+}
+
+.dialog-text {
+    -fx-padding: 10 12 10 12;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-wrap-text: true;
+}
+
+.user-text {
+    -fx-background-color: #e6f0ff;
+    -fx-text-fill: #1b3d6d;
+    -fx-alignment: center-right;
+}
+
+.penguin-text {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d7deea;
+    -fx-border-width: 1;
+    -fx-text-fill: #1f2633;
+}
+
+.button {
+    -fx-background-radius: 8;
+    -fx-padding: 8 14;
+}
+
+.text-field {
+    -fx-background-radius: 8;
+    -fx-padding: 8 10;
+}

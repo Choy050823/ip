@@ -37,6 +37,11 @@ public class DialogBox extends HBox {
 
         dialog.setText(s);
         displayPicture.setImage(i);
+        this.getStyleClass().add("dialog-box");
+        dialog.getStyleClass().add("dialog-text");
+        displayPicture.getStyleClass().add("dialog-avatar");
+        dialog.setWrapText(true);
+        dialog.setMaxWidth(Double.MAX_VALUE);
     }
 
     /**
@@ -50,12 +55,17 @@ public class DialogBox extends HBox {
     }
 
     public static DialogBox getUserDialog(String s, Image i) {
-        return new DialogBox(s, i);
+        var db = new DialogBox(s, i);
+        db.getStyleClass().add("user");
+        db.dialog.getStyleClass().add("user-text");
+        return db;
     }
 
     public static DialogBox getPenguinBotDialog(String s, Image i) {
         var db = new DialogBox(s, i);
         db.flip();
+        db.getStyleClass().add("penguin");
+        db.dialog.getStyleClass().add("penguin-text");
         return db;
     }
 }
