@@ -5,7 +5,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 
 import java.util.Objects;
@@ -13,7 +13,7 @@ import java.util.Objects;
 /**
  * Controller for the main GUI.
  */
-public class MainWindow extends AnchorPane {
+public class MainWindow extends BorderPane {
     @FXML
     private ScrollPane scrollPane;
     @FXML
@@ -37,9 +37,18 @@ public class MainWindow extends AnchorPane {
             )
     );
 
+    // MainWindow.java, MainWindow.fxml is refactored by GitHub Copilot
+    // to enable resizable GUI feature for better GUI
+    // theme.css is also generated to make the theme for the GUI
     @FXML
     public void initialize() {
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
+        scrollPane.setFitToWidth(true);
+        dialogContainer.setFillWidth(true);
+        // Apply shared styling to the root once controls are available.
+        this.getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/view/theme.css")).toExternalForm()
+        );
     }
 
     public void setPenguinBot(PenguinBot p) {
